@@ -57,9 +57,54 @@ node --test tests/conformance.test.mjs
 node tools/validate.mjs --bundle tests/rack-bundle
 node tools/render.mjs  --bundle tests/rack-bundle --seconds 1 --out out.wav
 node tools/pack-rack.mjs tests/rack-bundle --out demo.wclap-rack.tar.gz
+```
 
-# 4. browser test host: serve this repo and open test-host/ (module worklets needed)
-npx serve .   # then http://localhost:3000/test-host/
+## Testing — what to load where
+
+**Browser test host** (recommended: Chrome or Edge; module AudioWorklets required — Firefox does not
+support them, use the CLIs there):
+
+```sh
+cd wclap-rack && python3 -m http.server 8137    # or: npx serve .
+# open one of:
+http://127.0.0.1:8137/test-host/?bundle=/tests/rack-bundle/demo.wclap-rack.tar.gz
+http://127.0.0.1:8137/test-host/?bundle=/examples/ports-rack/ports-rack.wclap-rack.tar.gz
+```
+
+- `tests/rack-bundle/demo.wclap-rack.tar.gz` — the testfx demo (gain −6 dB → 64-sample delay).
+- `examples/ports-rack/ports-rack.wclap-rack.tar.gz` — **real open-webclap ports**: WetChorus → Pearls.
+  (Rebuild it after changing `examples/ports-rack/`: `node tools/pack-rack.mjs examples/ports-rack --out examples/ports-rack/ports-rack.wclap-rack.tar.gz`)
+- Or use the page's file picker: a `.wclap-rack.tar.gz`, or a rack bundle **directory**.
+- Click **Load & play** (the click also unlocks audio): a 110 Hz saw plays through the rack in
+  realtime; each device gets a panel with bypass checkbox and one slider per parameter; the status
+  line shows the summed `clap.latency`.
+- The `?bundle=<url>` parameter makes any served rack bundle auto-load — handy for demos/embeds.
+
+**Command line** (any browser, any OS):
+
+```sh
+node tools/validate.mjs --bundle <dir | .wclap-rack.tar.gz>   # schema + MANIFEST sha256, exit code
+node tools/render.mjs  --bundle <dir | .wclap-rack.tar.gz> --seconds 2 --out rack.wav --json
+                                                        # offline render, determinism check, WAV
+node --test tests/conformance.test.mjs                  # the L1–L3 conformance harness
+```
+
+**Make your own rack bundle** from any WCLAP archives (e.g. open-webclap's `site/public/bundled/*.wclap.tar.gz`):
+
+```sh
+mkdir my-rack && cp /path/to/foo.wclap.tar.gz my-rack/
+# MANIFEST.json: sha256 of each module.wasm — generate with:
+node -e "import('./reference-host/index.mjs').then(async m => { const fs = await import('node:fs');
+  const out = {}; for (const f of fs.readdirSync('my-rack').filter(f => f.endsWith('.tar.gz'))) {
+    const { wasm } = await m.loadBundleBytesAsync(new Uint8Array(fs.readFileSync('my-rack/' + f)));
+    out[f.replace(/\.wclap\.tar\.gz$/, '')] = { path: f, sha256: await m.sha256Hex(wasm) }; }
+  fs.writeFileSync('my-rack/MANIFEST.json', JSON.stringify(out, null, 2)); })"
+# rack.json: find plugin ids + param ids with the reference host:
+node -e "import('./reference-host/index.mjs').then(async m => { const fs = await import('node:fs');
+  const d = await m.describeBundle(new Uint8Array(fs.readFileSync('my-rack/foo.wclap.tar.gz')));
+  console.log(JSON.stringify(d, null, 2)); })"
+# then write rack.json (see examples/ports-rack/rack.json) and:
+node tools/validate.mjs --bundle my-rack && node tools/pack-rack.mjs my-rack --out my-rack.wclap-rack.tar.gz
 ```
 
 ## Status and relation to other projects

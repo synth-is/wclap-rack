@@ -1,0 +1,10 @@
+{
+  "wet-chorus": {
+    "path": "wet-chorus.wclap.tar.gz",
+    "sha256": "7b5f85e94a64b131261072f3953bfae1f0c9b8881d4779dabf25c4b165e34dff"
+  },
+  "pearls": {
+    "path": "pearls.wclap.tar.gz",
+    "sha256": "0998a6ae58a09acd0c940a8d46f106912b892bbc9e6a607140d70f3476fc3382"
+  }
+}
