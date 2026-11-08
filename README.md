@@ -65,15 +65,20 @@ node tools/pack-rack.mjs tests/rack-bundle --out demo.wclap-rack.tar.gz
 support them, use the CLIs there):
 
 ```sh
-cd wclap-rack && python3 -m http.server 8137    # or: npx serve .
+cd wclap-rack && node tools/serve.mjs 8137      # no-store static server (python -m http.server works too,
+                                                 # but Chrome may heuristically cache modules — hard-reload if stale)
 # open one of:
 http://127.0.0.1:8137/test-host/?bundle=/tests/rack-bundle/demo.wclap-rack.tar.gz
 http://127.0.0.1:8137/test-host/?bundle=/examples/ports-rack/ports-rack.wclap-rack.tar.gz
+http://127.0.0.1:8137/test-host/?bundle=/examples/effects-rack/effects-rack.wclap-rack.tar.gz
 ```
 
 - `tests/rack-bundle/demo.wclap-rack.tar.gz` — the testfx demo (gain −6 dB → 64-sample delay).
 - `examples/ports-rack/ports-rack.wclap-rack.tar.gz` — **real open-webclap ports**: WetChorus → Pearls.
-  (Rebuild it after changing `examples/ports-rack/`: `node tools/pack-rack.mjs examples/ports-rack --out examples/ports-rack/ports-rack.wclap-rack.tar.gz`)
+- `examples/effects-rack/effects-rack.wclap-rack.tar.gz` — a 5-device rack mixing open-webclap ports and
+  openDAW's Signalsmith Basics test bundle: WetChorus → Basics Crunch → Basics Reverb → Pearls → Basics
+  Limiter (44 parameters).
+  Rebuild after changing the examples: `node tools/pack-rack.mjs examples/effects-rack --out examples/effects-rack/effects-rack.wclap-rack.tar.gz`
 - Or use the page's file picker: a `.wclap-rack.tar.gz`, or a rack bundle **directory**.
 - Click **Load & play** (the click also unlocks audio): a 110 Hz saw plays through the rack in
   realtime; each device gets a panel with bypass checkbox and one slider per parameter; the status

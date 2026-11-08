@@ -32,7 +32,8 @@ class RackProcessor extends AudioWorkletProcessor {
 					host.snapshot();
 					this.hosts.set(d.bundle, host);
 				}
-				host.restore();
+				// no restore() here: realtime keeps all devices alive at once, and restore()
+				// would invalidate earlier plugins sharing this host (null function table entries)
 				const plugin = host.createPlugin(d.plugin);
 				plugin.activate({ sampleRate, blockSize: B });
 				if (d.state) plugin.loadState(Uint8Array.from(atob(d.state), (c) => c.charCodeAt(0)));
@@ -69,6 +70,15 @@ class RackProcessor extends AudioWorkletProcessor {
 	}
 
 	process(inputs, outputs) {
+		try {
+			return this._process(inputs, outputs);
+		} catch (e) {
+			if (!this._errPosted) { this._errPosted = true; this.port.postMessage({ type: 'error', message: 'process: ' + String(e && e.stack || e).slice(0, 500) }); }
+			return false;
+		}
+	}
+
+	_process(inputs, outputs) {
 		const input = inputs[0], output = outputs[0];
 		if (!this.ready || !input || input.length === 0) return true;
 		let l = input[0], r = input[1] ?? input[0];

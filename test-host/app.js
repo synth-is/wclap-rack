@@ -81,6 +81,7 @@ async function start(loaded) {
 	gain.gain.value = 0.5;
 	osc.connect(gain).connect(node);
 	osc.start();
+	window.__src = { osc, gain };
 	ctx.resume().catch(() => {});
 	$('#status').textContent = `playing "${rack.name ?? 'rack'}" — ${rack.devices.length} device(s), summed latency ${'?'} frames`;
 	window.__node = node;

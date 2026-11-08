@@ -1,0 +1,38 @@
+{
+  "$schema": "../../schema/rack.schema.json",
+  "format": "wclap-rack",
+  "version": 1,
+  "name": "effects rack: WetChorus -> Crunch -> Reverb -> Pearls -> Limiter",
+  "devices": [
+    {
+      "bundle": "wet-chorus",
+      "plugin": "studio.opendaw.commons.wet-chorus",
+      "on": true,
+      "params": { "0": 5, "1": 1, "2": 180 }
+    },
+    {
+      "bundle": "basics",
+      "plugin": "uk.co.signalsmith.basics.crunch",
+      "on": true,
+      "params": { "2943184073": 0.6, "4249490896": 0.4 }
+    },
+    {
+      "bundle": "basics",
+      "plugin": "uk.co.signalsmith.basics.reverb",
+      "on": true,
+      "params": { "3538153984": 0.5, "1506047092": 0.5 }
+    },
+    {
+      "bundle": "pearls",
+      "plugin": "studio.opendaw.pearls",
+      "on": true,
+      "params": { "914662914": 0.4, "262751258": 0.5, "1433314245": 0.25 }
+    },
+    {
+      "bundle": "basics",
+      "plugin": "uk.co.signalsmith.basics.limiter",
+      "on": true,
+      "params": { "1951529716": 0.9 }
+    }
+  ]
+}
