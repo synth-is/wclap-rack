@@ -10,6 +10,32 @@
     "format": { "const": "wclap-rack" },
     "version": { "const": 1 },
     "name": { "type": "string" },
+    "source": {
+      "type": "object",
+      "description": "Optional instrument device at the head of the rack: rendered from notes (no audio input), its output feeds the device chain. Without it, the host supplies the input audio.",
+      "required": ["bundle", "plugin"],
+      "properties": {
+        "bundle": { "type": "string" },
+        "plugin": { "type": "string" },
+        "params": { "type": "object", "additionalProperties": { "type": "number" } },
+        "state": { "type": "string" },
+        "length": { "type": "integer", "description": "frames of audio to render when the caller gives no input audio (default 48000)" },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["key"],
+            "properties": {
+              "key": { "type": "integer", "description": "MIDI note number" },
+              "velocity": { "type": "number", "default": 0.8 },
+              "frame": { "type": "integer", "default": 0, "description": "note-on frame, relative to the start of the audio (after preRoll)" },
+              "frames": { "type": "integer", "description": "note length in frames; default: until the end of the rendered audio" }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "devices": {
       "type": "array",
       "items": {

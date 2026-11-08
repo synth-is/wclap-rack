@@ -70,8 +70,9 @@ export async function validateRackBundle(rack, manifest, bundles) {
 const decodeState = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
 
 /**
- * Render a rack over a stereo input (offline).
- *   rack      parsed rack.json
+ * Render a rack (offline).
+ *   rack      parsed rack.json; an optional rack.source (instrument device) is rendered from its
+ *             notes first and its output becomes the stream; without a source, `input` is required
  *   bundles   { bundleKey: archive/wasm bytes }
  *   input     { left, right } Float32Arrays of equal length (or an array of channels)
  *   options   { sampleRate = 48000, blockSize = 512, preRoll = 4096 }
@@ -80,11 +81,8 @@ const decodeState = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
 export async function renderRack({ rack, bundles, input, sampleRate = 48000, blockSize = 512, preRoll = 4096 }) {
 	const errors = validateRackDoc(rack);
 	if (errors.length) throw new Error(`invalid rack: ${errors.join('; ')}`);
-	const chans = Array.isArray(input) ? input : [input.left, input.right ?? input.left];
-	const len = chans[0].length;
-	const full = chans.map((c) => { const f = new Float32Array(preRoll + len); f.set(c, preRoll); return f; });
 
-	const hosts = new Map(); // bundleKey -> { host }
+	const hosts = new Map(); // bundleKey -> host
 	const hostFor = async (key) => {
 		if (hosts.has(key)) return hosts.get(key);
 		const bytes = bundles[key];
@@ -96,9 +94,45 @@ export async function renderRack({ rack, bundles, input, sampleRate = 48000, blo
 		return host;
 	};
 
-	let cur = full;
+	let len;
+	if (rack.source) len = input ? (Array.isArray(input) ? input[0].length : input.left.length) : (rack.source.length ?? sampleRate);
+	else if (!input) throw new Error('renderRack: no rack.source and no input audio given');
+	else len = Array.isArray(input) ? input[0].length : input.left.length;
+
+	let cur;
 	const devices = [];
 	let latency = 0, tail = 0;
+	if (rack.source) {
+		// the source instrument: rendered from notes, no audio input; its output feeds the chain
+		const s = rack.source;
+		const host = await hostFor(s.bundle);
+		host.restore();
+		const plugin = host.createPlugin(s.plugin);
+		try {
+			plugin.activate({ sampleRate, blockSize });
+			if (s.state) plugin.loadState(decodeState(s.state));
+			const events = [
+				...Object.entries(s.params ?? {}).map(([k, v]) => ({
+					frame: 0, type: 'param', id: plugin.param(isNaN(Number(k)) ? k : Number(k))?.id ?? k, value: v,
+				})),
+				...((s.notes ?? [{ key: 60, velocity: 0.8, frame: 0 }]).map((n, i) => [
+					{ frame: preRoll + (n.frame ?? 0), type: 'noteOn', key: n.key, velocity: n.velocity ?? 0.8, channel: 0, noteId: i + 1 },
+					{ frame: preRoll + (n.frame ?? 0) + (n.frames ?? len), type: 'noteOff', key: n.key, velocity: 0, channel: 0, noteId: i + 1 },
+				])).flat(),
+			];
+			const out = plugin.render(preRoll + len, events); // no input: instrument
+			cur = out.length > 1 ? [out[0], out[1]] : [out[0], out[0]];
+			latency += plugin.latency();
+			tail = Math.max(tail, plugin.tail());
+			devices.push({ plugin: s.plugin, on: true, source: true, latency: plugin.latency() });
+		} finally {
+			plugin.destroy();
+		}
+	} else {
+		const chans = Array.isArray(input) ? input : [input.left, input.right ?? input.left];
+		cur = chans.map((c) => { const f = new Float32Array(preRoll + len); f.set(c, preRoll); return f; });
+	}
+
 	for (const d of rack.devices) {
 		if (d.on === false) { devices.push({ plugin: d.plugin, on: false, latency: 0 }); continue; }
 		const host = await hostFor(d.bundle);

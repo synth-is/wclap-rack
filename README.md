@@ -71,6 +71,7 @@ cd wclap-rack && node tools/serve.mjs 8137      # no-store static server (python
 http://127.0.0.1:8137/test-host/?bundle=/tests/rack-bundle/demo.wclap-rack.tar.gz
 http://127.0.0.1:8137/test-host/?bundle=/examples/ports-rack/ports-rack.wclap-rack.tar.gz
 http://127.0.0.1:8137/test-host/?bundle=/examples/effects-rack/effects-rack.wclap-rack.tar.gz
+http://127.0.0.1:8137/test-host/?bundle=/examples/synth-fx-rack/synth-fx-rack.wclap-rack.tar.gz
 ```
 
 - `tests/rack-bundle/demo.wclap-rack.tar.gz` — the testfx demo (gain −6 dB → 64-sample delay).
@@ -78,10 +79,15 @@ http://127.0.0.1:8137/test-host/?bundle=/examples/effects-rack/effects-rack.wcla
 - `examples/effects-rack/effects-rack.wclap-rack.tar.gz` — a 5-device rack mixing open-webclap ports and
   openDAW's Signalsmith Basics test bundle: WetChorus → Basics Crunch → Basics Reverb → Pearls → Basics
   Limiter (44 parameters).
-  Rebuild after changing the examples: `node tools/pack-rack.mjs examples/effects-rack --out examples/effects-rack/effects-rack.wclap-rack.tar.gz`
+- `examples/synth-fx-rack/synth-fx-rack.wclap-rack.tar.gz` — a **self-contained synth + effects rack**:
+  the rack's optional `source` device (Aether, an instrument WCLAP) renders a C4 note, then WetChorus →
+  Pearls process it. In the test host the source panel has note buttons; without a source the page plays
+  the 110 Hz saw instead.
+  Rebuild after changing the examples: `node tools/pack-rack.mjs examples/synth-fx-rack --out examples/synth-fx-rack/synth-fx-rack.wclap-rack.tar.gz`
 - Or use the page's file picker: a `.wclap-rack.tar.gz`, or a rack bundle **directory**.
-- Click **Load & play** (the click also unlocks audio): a 110 Hz saw plays through the rack in
-  realtime; each device gets a panel with bypass checkbox and one slider per parameter; the status
+- Click **Load & play** (the click also unlocks audio): with a `source` in the rack its note plays
+  (and the source panel has clickable note buttons); without one, a 110 Hz saw plays through the rack
+  in realtime. Each device gets a panel with bypass checkbox and one slider per parameter; the status
   line shows the summed `clap.latency`.
 - The `?bundle=<url>` parameter makes any served rack bundle auto-load — handy for demos/embeds.
 

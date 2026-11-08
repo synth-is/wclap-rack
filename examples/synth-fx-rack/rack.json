@@ -1,0 +1,27 @@
+{
+  "$schema": "../../schema/rack.schema.json",
+  "format": "wclap-rack",
+  "version": 1,
+  "name": "Aether (C4, 1 s) -> WetChorus -> Pearls",
+  "source": {
+    "bundle": "faust-aether",
+    "plugin": "org.faust.aether",
+    "length": 48000,
+    "notes": [{ "key": 60, "velocity": 0.8, "frame": 0, "frames": 48000 }],
+    "params": { "0": 0.18, "1": 0.5, "3": 1.4, "14": 0.9, "15": 0.9, "94": 3 }
+  },
+  "devices": [
+    {
+      "bundle": "wet-chorus",
+      "plugin": "studio.opendaw.commons.wet-chorus",
+      "on": true,
+      "params": { "0": 5, "1": 1, "2": 180 }
+    },
+    {
+      "bundle": "pearls",
+      "plugin": "studio.opendaw.pearls",
+      "on": true,
+      "params": { "914662914": 0.4, "262751258": 0.5, "1433314245": 0.25 }
+    }
+  ]
+}

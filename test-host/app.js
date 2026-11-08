@@ -57,8 +57,14 @@ async function start(loaded) {
 	node?.disconnect();
 	node = new AudioWorkletNode(ctx, 'wclap-rack', { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [2] });
 	node.connect(ctx.destination);
+	let autoPlay = null;
 	node.port.onmessage = (e) => {
-		if (e.data.type === 'ready') { window.__latency = e.data.latency; window.__latByIndex = {}; for (const d of e.data.devices) if (d.params) window.__latByIndex[d.index] = 0; renderPanels(e.data, rack); }
+		if (e.data.type === 'ready') {
+			window.__latency = e.data.latency; window.__latByIndex = {};
+			for (const d of e.data.devices) if (d.params) window.__latByIndex[d.index] = 0;
+			renderPanels(e.data, rack);
+			if (autoPlay) { const n = autoPlay; setTimeout(() => { node.port.postMessage({ type: 'note', on: true, key: n.key, velocity: n.velocity ?? 0.8 }); }, 100); }
+		}
 		if (e.data.type === 'error') { $('#status').textContent = 'worklet error: ' + e.data.message; window.__errors.push('worklet: ' + e.data.message); }
 		if (e.data.type === 'latencyUpdate') {
 			window.__latency = (window.__latency ?? 0) - (window.__latByIndex?.[e.data.index] ?? 0) + e.data.latency;
@@ -73,15 +79,20 @@ async function start(loaded) {
 		bundlesAB[k] = wasm.buffer.slice(wasm.byteOffset, wasm.byteOffset + wasm.byteLength);
 	}
 	node.port.postMessage({ type: 'load', rack, bundles: bundlesAB });
-	// test signal: 110 Hz saw through the rack
-	const osc = ctx.createOscillator();
-	osc.type = 'sawtooth';
-	osc.frequency.value = 110;
-	const gain = ctx.createGain();
-	gain.gain.value = 0.5;
-	osc.connect(gain).connect(node);
-	osc.start();
-	window.__src = { osc, gain };
+	if (rack.source) {
+		// the rack has its own instrument source: auto-play its first note (or C4) once loaded
+		autoPlay = rack.source.notes?.[0] ?? { key: 60, velocity: 0.8, frames: 48000 };
+	} else {
+		// test signal: 110 Hz saw through the rack
+		const osc = ctx.createOscillator();
+		osc.type = 'sawtooth';
+		osc.frequency.value = 110;
+		const gain = ctx.createGain();
+		gain.gain.value = 0.5;
+		osc.connect(gain).connect(node);
+		osc.start();
+		window.__src = { osc, gain };
+	}
 	ctx.resume().catch(() => {});
 	$('#status').textContent = `playing "${rack.name ?? 'rack'}" — ${rack.devices.length} device(s), summed latency ${'?'} frames`;
 	window.__node = node;
@@ -91,6 +102,35 @@ function renderPanels(ready, rack) {
 	$('#status').textContent = `playing "${rack.name ?? 'rack'}" — ${rack.devices.length} device(s), summed latency ${ready.latency} frames`;
 	const host = $('#devices');
 	host.innerHTML = '';
+	if (ready.source) {
+		const div = document.createElement('div');
+		div.className = 'device';
+		const head = document.createElement('div');
+		head.className = 'device-head';
+		head.append(document.createTextNode(`[source] ${ready.source.plugin} — click a note:`));
+		for (const key of [48, 52, 55, 60, 64]) {
+			const b = document.createElement('button');
+			b.textContent = String(key);
+			b.style.margin = '0 2px';
+			b.onmousedown = () => node.port.postMessage({ type: 'note', on: true, key, velocity: 0.8 });
+			b.onmouseup = () => node.port.postMessage({ type: 'note', on: false, key });
+			head.append(b);
+		}
+		div.append(head);
+		for (const p of ready.source.params.slice(0, 12)) {
+			const row = document.createElement('label');
+			row.className = 'param';
+			const slider = document.createElement('input');
+			slider.type = 'range';
+			slider.min = p.min; slider.max = p.max; slider.step = p.stepped ? 1 : (p.max - p.min) / 200; slider.value = p.def;
+			slider.oninput = () => { node.port.postMessage({ type: 'param', index: -1, id: p.id, value: Number(slider.value) }); val.textContent = slider.value; };
+			const val = document.createElement('span');
+			val.textContent = p.def;
+			row.append(document.createTextNode(p.name), slider, val);
+			div.append(row);
+		}
+		host.append(div);
+	}
 	for (const d of ready.devices) {
 		const div = document.createElement('div');
 		div.className = 'device';

@@ -70,6 +70,13 @@ MUST verify the sha256 of each `module.wasm` against the manifest and MUST refus
 ```
 
 - `devices`: an **ordered array**. Devices run **serially** in array order over a stereo stream.
+- `source` (optional): an **instrument device** at the head of the rack — a bundle/plugin with the
+  `instrument` feature. It is rendered from `notes` (MIDI note on/off events; `frame`/`frames` are in
+  frames relative to the start of the audio) with no audio input, and its output becomes the stream the
+  `devices` process. Without a `source`, the host supplies the input audio (a DAW track, a rendered
+  substrate, a test signal). `source.length` sets the rendered length in frames when no input audio is
+  given (default one second). This is what makes a rack bundle fully self-contained: "Aether + chorus +
+  reverb" is one portable document.
 - `bundle`: key into `MANIFEST.json`. `plugin`: the clap plugin id inside that bundle's factory.
 - `on: false`: **bypass** — the device is skipped and the stream passes through bit-transparent.
 - `params`: `{ "<param id as string>" | "<param name>": <raw CLAP value within [min, max]> }`, applied as
@@ -86,18 +93,25 @@ stays generic: an ordered device list.
 
 1. Prepend `preRoll` frames of silence (default 4096) once, so parameter ramps and type re-inits
    settle before the audio.
-2. For each device in order: create the plugin (one host per bundle; `snapshot()` after load,
-   `restore()` before every device render, so devices share a bundle deterministically), activate at
-   the host sample rate, load `state`, apply `params` at frame 0, render the whole stream through the
-   device's audio input port 0.
+2. If the rack has a `source`, render it first: one host per bundle, `snapshot()` after load,
+   `restore()` before its render, create the plugin, activate at the host sample rate, load `state`,
+   apply `params` at frame 0, send the `notes` as note events (shifted by `preRoll`), and render
+   `preRoll + length` frames with no audio input. Its stereo output is the stream.
+3. For each device in order: same host discipline (`restore()` before every device render, so devices
+   share a bundle deterministically), load `state`, apply `params` at frame 0, render the whole stream
+   through the device's audio input port 0.
 3. Each device's reported `clap.latency` is compensated **at that device** (its output is realigned),
    so the rack output is sample-aligned with the rack input and has the input's length. The tail
    beyond the input length is the render buffer's business, not the rack's.
 4. A bypassed device is skipped entirely (bit-transparent).
 
 **Realtime rendering** (AudioWorklet, native plugin): devices run in `process()` in order. Do NOT drop
-frames; instead report the **sum of active devices' `clap.latency`** (and the max `clap.tail`) upward —
-CLAP convention lets the host/DAW compensate. See `test-host/rack-worklet.js`.
+frames; instead report the **sum of active devices' `clap.latency`** (and the max `clap.tail`, plus the
+source's latency) upward — CLAP convention lets the host/DAW compensate. Note events route to the
+`source` device; its audio output feeds the first effect. One host per bundle, plugins created once and
+kept alive — do NOT call `restore()` between device creations in realtime, it rewinds the whole module
+memory and invalidates live plugins sharing that bundle (`restore()`-per-render is an offline-only
+discipline). See `test-host/rack-worklet.js`.
 
 Mono/stereo adaptation is the host's: a mono device gets the mid channel; a single-channel output is
 duplicated to stereo.

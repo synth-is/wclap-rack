@@ -23,6 +23,18 @@ class RackProcessor extends AudioWorkletProcessor {
 		if (m.type === 'load') {
 		 try {
 			const { rack, bundles } = m;
+			if (rack.source) {
+				// the source instrument: rendered from notes, no audio input; feeds the chain
+				const s = rack.source;
+				const host = await this.hostFor(s.bundle, bundles);
+				const plugin = host.createPlugin(s.plugin);
+				plugin.activate({ sampleRate, blockSize: B });
+				if (s.state) plugin.loadState(Uint8Array.from(atob(s.state), (c) => c.charCodeAt(0)));
+				const events = Object.entries(s.params ?? {}).map(([k, v]) => ({
+					frame: 0, type: 'param', id: plugin.param(isNaN(Number(k)) ? k : Number(k))?.id ?? k, value: v,
+				}));
+				this.source = { plugin, events, first: true, pending: [], params: plugin.params.map((p) => ({ id: p.id, name: p.name, min: p.min, max: p.max, def: p.def, stepped: p.stepped })) };
+			}
 			for (const [i, d] of rack.devices.entries()) {
 				if (d.on === false) { this.devices.push({ index: i, on: false }); continue; }
 				let host = this.hosts.get(d.bundle);
@@ -45,11 +57,12 @@ class RackProcessor extends AudioWorkletProcessor {
 					latency: 0,
 				});
 			}
-			let latency = 0;
+			let latency = this.source ? this.source.plugin.latency() : 0;
 			for (const d of this.devices) if (d.on) { d.latency = d.plugin.latency(); latency += d.latency; }
 			this.port.postMessage({
 				type: 'ready',
 				latency,
+				source: this.source ? { plugin: rack.source.plugin, params: this.source.params } : null,
 				devices: this.devices.map((d) => d.on
 					? { index: d.index, plugin: rack.devices[d.index].plugin, params: d.plugin.params.map((p) => ({ id: p.id, name: p.name, min: p.min, max: p.max, def: p.def, stepped: p.stepped })) }
 					: { index: d.index, bypassed: true, plugin: rack.devices[d.index].plugin }),
@@ -59,9 +72,16 @@ class RackProcessor extends AudioWorkletProcessor {
 			this.port.postMessage({ type: 'error', message: String(e && e.stack || e) });
 		 }
 		}
+		if (m.type === 'note' && this.source) {
+			this.source.pending.push({ frame: 0, type: m.on ? 'noteOn' : 'noteOff', key: m.key, velocity: m.on ? (m.velocity ?? 0.8) : 0, channel: 0, noteId: 1 });
+		}
 		if (m.type === 'param') {
-			const d = this.devices[m.index];
-			if (d?.on) d.pending = [...(d.pending ?? []), { frame: 0, type: 'param', id: m.id, value: m.value }];
+			if (m.index === -1 && this.source) {
+				this.source.pending.push({ frame: 0, type: 'param', id: m.id, value: m.value });
+			} else {
+				const d = this.devices[m.index];
+				if (d?.on) d.pending = [...(d.pending ?? []), { frame: 0, type: 'param', id: m.id, value: m.value }];
+			}
 		}
 		if (m.type === 'setOn') {
 			const d = this.devices[m.index];
@@ -78,10 +98,35 @@ class RackProcessor extends AudioWorkletProcessor {
 		}
 	}
 
+	async hostFor(key, bundles) {
+		let host = this.hosts.get(key);
+		if (!host) {
+			// the page sends module.wasm bytes per bundle key (it can gunzip; worklets cannot import())
+			host = await WclapHost.load(new Uint8Array(bundles[key]));
+			host.snapshot();
+			this.hosts.set(key, host);
+		}
+		return host;
+	}
+
 	_process(inputs, outputs) {
 		const input = inputs[0], output = outputs[0];
-		if (!this.ready || !input || input.length === 0) return true;
-		let l = input[0], r = input[1] ?? input[0];
+		if (!this.ready) return true;
+		let l, r;
+		if (this.source) {
+			// source instrument renders from notes (no audio input); its output feeds the chain
+			const s = this.source;
+			const events = s.first ? [...s.events, ...s.pending] : s.pending;
+			s.first = false;
+			s.pending = [];
+			const out = s.plugin.render(B, events);
+			l = out[0];
+			r = out[1] ?? out[0];
+		} else {
+			if (!input || input.length === 0) return true;
+			l = input[0];
+			r = input[1] ?? input[0];
+		}
 		for (const d of this.devices) {
 			if (!d.on) continue;
 			const events = d.first ? d.events : (d.pending ?? []);
