@@ -2,27 +2,51 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>wclap-rack test host</title>
+<title>wclap-rack test host &amp; assembler</title>
 <style>
   body { font: 14px/1.4 system-ui, sans-serif; background: #16181d; color: #d7dae0; margin: 2rem; }
   h1 { font-size: 1.2rem; }
-  .device { border: 1px solid #333; border-radius: 8px; padding: 0.6rem 0.8rem; margin: 0.6rem 0; max-width: 560px; }
-  .device-head { font-weight: 600; margin-bottom: 0.4rem; }
+  .toolbar { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin: 0.8rem 0; }
+  .toolbar input[type=text] { background: #22252b; color: #d7dae0; border: 1px solid #444; border-radius: 6px; padding: 0.35rem 0.6rem; }
+  button { background: #2b6cb0; color: #fff; border: 0; border-radius: 6px; padding: 0.4rem 0.9rem; cursor: pointer; }
+  button:hover { background: #3182ce; }
+  #catalog { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 0.8rem 0; }
+  .card { border: 1px solid #333; border-radius: 8px; padding: 0.5rem 0.7rem; max-width: 300px; background: #1c1f24; }
+  .card-head { font-weight: 600; }
+  .kind { font-size: 0.7rem; border-radius: 4px; padding: 0.1rem 0.35rem; margin-left: 0.3rem; vertical-align: middle; }
+  .kind.instrument { background: #6b46c1; }
+  .kind.audio-fx { background: #2b6cb0; }
+  .kind.note-fx { background: #b7791f; }
+  .kind.other { background: #555; }
+  .card-actions { margin-top: 0.4rem; }
+  .muted { color: #888; font-size: 0.85rem; }
+  .device { border: 1px solid #333; border-radius: 8px; padding: 0.6rem 0.8rem; margin: 0.6rem 0; max-width: 620px; }
+  .device.source { border-color: #6b46c1; }
+  .device-head { font-weight: 600; margin-bottom: 0.4rem; display: flex; gap: 0.3rem; align-items: center; flex-wrap: wrap; }
+  .device-head button { padding: 0.1rem 0.45rem; font-size: 0.8rem; }
   .param { display: flex; gap: 0.5rem; align-items: center; margin: 0.2rem 0; }
   .param input[type=range] { flex: 1; }
   #status { color: #8ab4f8; margin: 0.8rem 0; }
-  button { background: #2b6cb0; color: #fff; border: 0; border-radius: 6px; padding: 0.4rem 0.9rem; cursor: pointer; }
+  h2 { font-size: 1rem; margin: 1.2rem 0 0.3rem; }
 </style>
 </head>
 <body>
-<h1>wclap-rack test host</h1>
-<p>Load a rack bundle (<code>.wclap-rack.tar.gz</code>) or a rack bundle directory. A 110&nbsp;Hz saw plays through the rack in realtime.</p>
-<p>
-  <input type="file" id="bundle" accept=".tar.gz,.tgz">
-  or directory: <input type="file" id="bundleDir" webkitdirectory>
+<h1>wclap-rack test host &amp; assembler</h1>
+<p>Load an existing rack bundle, or assemble one from WCLAP bundles. Audio plays in realtime (rack <code>source</code> plays its note; otherwise a 110&nbsp;Hz saw).</p>
+<div class="toolbar">
+  <input type="file" id="bundle" accept=".tar.gz,.tgz" title="a .wclap-rack.tar.gz">
+  <input type="file" id="bundleDir" webkitdirectory title="or a rack bundle directory">
   <button id="load">Load &amp; play</button>
-</p>
+  <span class="muted">or assemble:</span>
+  <input type="file" id="addBundles" multiple accept=".tar.gz,.tgz,.wclap" title="add .wclap.tar.gz bundles to the catalog">
+  <input type="text" id="rackName" value="untitled rack" size="18">
+  <button id="exportJson">Download rack.json</button>
+  <button id="exportPack">Download .wclap-rack.tar.gz</button>
+</div>
 <div id="status"></div>
+<h2>Catalog (added bundles)</h2>
+<div id="catalog"></div>
+<h2>Rack</h2>
 <div id="devices"></div>
 <script type="module" src="./app.js"></script>
 </body>

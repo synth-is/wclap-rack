@@ -87,8 +87,14 @@ http://127.0.0.1:8137/test-host/?bundle=/examples/synth-fx-rack/synth-fx-rack.wc
 - Or use the page's file picker: a `.wclap-rack.tar.gz`, or a rack bundle **directory**.
 - Click **Load & play** (the click also unlocks audio): with a `source` in the rack its note plays
   (and the source panel has clickable note buttons); without one, a 110 Hz saw plays through the rack
-  in realtime. Each device gets a panel with bypass checkbox and one slider per parameter; the status
-  line shows the summed `clap.latency`.
+  in realtime. Each device gets a panel with bypass checkbox, reorder (↑/↓), remove (✕) and one slider
+  per parameter; the status line shows the summed `clap.latency`.
+- **Assembling a rack**: "Add bundles…" loads `.wclap.tar.gz` archives into the **catalog** (cards with
+  kind badges — instrument / audio effect / note effect, borrowed from open-webclap's site and openDAW's
+  DeviceCatalog/DeviceSlot). Instruments get *set as source*, audio effects *+ add to rack*; note
+  effects are greyed out (v1 racks are a serial audio chain). Rename the rack, then **Download
+  rack.json** or **Download .wclap-rack.tar.gz** — the archive is a complete rack bundle (rack.json +
+  generated MANIFEST.json with sha256 of every module.wasm + the bundle archives), validated on load.
 - The `?bundle=<url>` parameter makes any served rack bundle auto-load — handy for demos/embeds.
 
 **Command line** (any browser, any OS):
