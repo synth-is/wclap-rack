@@ -2,9 +2,11 @@
 // ctx.audioWorklet.addModule('rack-worklet.js', { type: 'module' })).
 //
 // One WclapHost per bundle; one plugin per device; devices run serially in process() in rack order.
+// The page sends `bundles` as { key: module.wasm bytes } — decompression happens page-side (worklets
+// have no DecompressionStream/import()).
 // Realtime semantics per SPEC.md §3: no frames are dropped; the summed latency is reported to the
 // page (a DAW host would compensate it upward).
-import { WclapHost, loadBundleBytesAsync } from '../reference-host/index.mjs';
+import { WclapHost } from '../reference-host/index.mjs';
 
 const B = 128; // RenderQuantum
 
@@ -19,13 +21,14 @@ class RackProcessor extends AudioWorkletProcessor {
 
 	async onmsg(m) {
 		if (m.type === 'load') {
+		 try {
 			const { rack, bundles } = m;
 			for (const [i, d] of rack.devices.entries()) {
 				if (d.on === false) { this.devices.push({ index: i, on: false }); continue; }
 				let host = this.hosts.get(d.bundle);
 				if (!host) {
-					const { wasm } = await loadBundleBytesAsync(new Uint8Array(bundles[d.bundle]));
-					host = await WclapHost.load(wasm);
+					// the page sends module.wasm bytes per bundle key (it can gunzip; worklets cannot import())
+					host = await WclapHost.load(new Uint8Array(bundles[d.bundle]));
 					host.snapshot();
 					this.hosts.set(d.bundle, host);
 				}
@@ -51,6 +54,9 @@ class RackProcessor extends AudioWorkletProcessor {
 					: { index: d.index, bypassed: true, plugin: rack.devices[d.index].plugin }),
 			});
 			this.ready = true;
+		 } catch (e) {
+			this.port.postMessage({ type: 'error', message: String(e && e.stack || e) });
+		 }
 		}
 		if (m.type === 'param') {
 			const d = this.devices[m.index];
@@ -74,6 +80,13 @@ class RackProcessor extends AudioWorkletProcessor {
 			const out = d.plugin.render(B, events, { input: [l, r] });
 			l = out[0];
 			r = out[1] ?? out[0];
+			if (events === d.events) { // first block: params applied now, latency may have changed
+				const lat = d.plugin.latency();
+				if (lat !== d.latency) {
+					d.latency = lat;
+					this.port.postMessage({ type: 'latencyUpdate', index: d.index, latency: lat });
+				}
+			}
 		}
 		output[0].set(l);
 		if (output[1]) output[1].set(r);

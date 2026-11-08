@@ -1,8 +1,11 @@
 // app.js — the browser test host page: load a rack bundle (.wclap-rack.tar.gz, or a directory via
 // the directory picker), verify it, and play a test signal through the rack in realtime.
-import { loadBundleBytesAsync, validateRackBundle, untar } from '../reference-host/index.mjs';
+import { untarArchiveAsync, loadBundleBytesAsync, validateRackBundle } from '../reference-host/index.mjs';
 
 const $ = (sel) => document.querySelector(sel);
+window.__errors = [];
+window.addEventListener('error', (e) => window.__errors.push(String(e.message)));
+window.addEventListener('unhandledrejection', (e) => window.__errors.push('rejection: ' + String(e.reason)));
 let ctx = null, node = null;
 
 const td = new TextDecoder();
@@ -18,7 +21,7 @@ function assemble(files) {
 
 async function readRackBundle(file) {
 	const raw = new Uint8Array(await file.arrayBuffer());
-	const { files } = await loadBundleBytesAsync(raw); // untar (gzip via DecompressionStream)
+	const files = await untarArchiveAsync(raw); // untar (gzip via DecompressionStream)
 	return assemble(files);
 }
 
@@ -34,22 +37,42 @@ async function load() {
 	let loaded = null;
 	if (dirInput.files?.length) loaded = await readRackBundleDirFiles(dirInput.files);
 	else if (fileInput.files?.length) loaded = await readRackBundle(fileInput.files[0]);
-	else return;
+	else {
+		const url = new URLSearchParams(location.search).get('bundle');
+		if (!url) return;
+		loaded = await readRackBundle(new File([await (await fetch(url)).blob()], 'bundle.wclap-rack.tar.gz'));
+	}
+	await start(loaded);
+}
+
+async function start(loaded) {
 	const { rack, manifest, bundles } = loaded;
 	const { errors } = await validateRackBundle(rack, manifest, bundles);
 	if (errors.length) { $('#status').textContent = 'INVALID: ' + errors.join('; '); return; }
 
 	ctx ??= new AudioContext();
+	// autoplay policy: resume on the first real click; don't await resume() here (it can stay pending)
+	document.addEventListener('click', () => ctx.resume().catch(() => {}), { once: true });
 	await ctx.audioWorklet.addModule(new URL('./rack-worklet.js', import.meta.url), { type: 'module' });
 	node?.disconnect();
 	node = new AudioWorkletNode(ctx, 'wclap-rack', { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [2] });
 	node.connect(ctx.destination);
-	const bundlesAB = {};
-	for (const [k, v] of Object.entries(bundles)) bundlesAB[k] = v.buffer.slice(v.byteOffset, v.byteOffset + v.byteLength);
-	node.port.postMessage({ type: 'load', rack, bundles: bundlesAB });
 	node.port.onmessage = (e) => {
-		if (e.data.type === 'ready') renderPanels(e.data, rack);
+		if (e.data.type === 'ready') { window.__latency = e.data.latency; window.__latByIndex = {}; for (const d of e.data.devices) if (d.params) window.__latByIndex[d.index] = 0; renderPanels(e.data, rack); }
+		if (e.data.type === 'error') { $('#status').textContent = 'worklet error: ' + e.data.message; window.__errors.push('worklet: ' + e.data.message); }
+		if (e.data.type === 'latencyUpdate') {
+			window.__latency = (window.__latency ?? 0) - (window.__latByIndex?.[e.data.index] ?? 0) + e.data.latency;
+			window.__latByIndex = { ...(window.__latByIndex ?? {}), [e.data.index]: e.data.latency };
+			$('#status').textContent = $('#status').textContent.replace(/summed latency [^ ]+ frames/, `summed latency ${window.__latency} frames`);
+		}
 	};
+	// decompress page-side and send module.wasm bytes per bundle key (worklets cannot gunzip)
+	const bundlesAB = {};
+	for (const [k, v] of Object.entries(bundles)) {
+		const { wasm } = await loadBundleBytesAsync(v);
+		bundlesAB[k] = wasm.buffer.slice(wasm.byteOffset, wasm.byteOffset + wasm.byteLength);
+	}
+	node.port.postMessage({ type: 'load', rack, bundles: bundlesAB });
 	// test signal: 110 Hz saw through the rack
 	const osc = ctx.createOscillator();
 	osc.type = 'sawtooth';
@@ -58,6 +81,7 @@ async function load() {
 	gain.gain.value = 0.5;
 	osc.connect(gain).connect(node);
 	osc.start();
+	ctx.resume().catch(() => {});
 	$('#status').textContent = `playing "${rack.name ?? 'rack'}" — ${rack.devices.length} device(s), summed latency ${'?'} frames`;
 	window.__node = node;
 }
@@ -94,3 +118,6 @@ function renderPanels(ready, rack) {
 }
 
 $('#load').onclick = load;
+
+// auto-load when the page is opened as test-host/?bundle=<url to a .wclap-rack.tar.gz>
+if (new URLSearchParams(location.search).has('bundle')) load();

@@ -45,8 +45,8 @@ export function loadBundleBytes(raw) {
 	return normalize(untar(raw));
 }
 
-/** Async bundle loading; handles .tar.gz in the browser (DecompressionStream) and in Node (zlib). */
-export async function loadBundleBytesAsync(raw) {
+/** Async untar of a tar or tar.gz archive; handles gzip in the browser (DecompressionStream) and in Node (zlib). No module.wasm requirement — for rack bundle archives too. */
+export async function untarArchiveAsync(raw) {
 	if (isGzip(raw)) {
 		if (typeof DecompressionStream !== 'undefined') {
 			const ds = new DecompressionStream('gzip');
@@ -57,5 +57,10 @@ export async function loadBundleBytesAsync(raw) {
 			raw = new Uint8Array(zlib.gunzipSync(Buffer.from(raw)));
 		}
 	}
-	return loadBundleBytes(raw);
+	return untar(raw);
+}
+
+/** Async bundle loading (tar.gz / tar / bare wasm); requires module.wasm. */
+export async function loadBundleBytesAsync(raw) {
+	return normalize(await untarArchiveAsync(raw));
 }
