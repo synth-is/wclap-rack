@@ -7,6 +7,40 @@ A WCLAP is a single CLAP plugin compiled to wasm32 (see the WebCLAP org profile)
 how **several WCLAPs form a rack**: a portable, hash-verified document that any host with a CLAP runtime
 can render — in a browser, in Node, or natively (via `wclap-bridge`) inside a plugin such as Synth.is.
 
+## 0. Motivation
+
+Why racks of WCLAPs, and why a standard for them:
+
+- **Portability.** One wasm binary runs in a browser page, an AudioWorklet, Node, and — through
+  `wclap-bridge` — as a native CLAP in DAWs and inside other plugins (e.g. the Synth.is plugin
+  hosting engine WCLAPs). The plugin author builds once; every host is a new distribution channel for
+  free.
+- **Embeddability.** Hosts can embed third-party DSP without taking the process down: wasm is sandboxed
+  (memory-limited, WASI-only imports, `thread-spawn` refused), so a platform can safely host plugins it
+  does not control — in Synth.is's web app, in a Strudel live-coding session, in openDAW, in the plugin.
+- **Shareability.** A bundle is a self-contained, content-addressed archive (module.wasm + webview UI +
+  LICENSE/NOTICES + source link). This spec adds the missing piece: a **rack document** makes whole
+  *combinations* shareable and re-loadable, not just single plugins — a discovered sound is a bundle
+  plus a state blob; a rack of effects is a `rack.json` anyone can render.
+- **Determinism, hence measurability.** With pinned WASI clock/RNG and one host per bundle, rendering is
+  bit-identical across processes, machines and hosts (the reference host proves Node == Chrome by
+  fingerprint). That is what makes racks scientifically evaluable — do effects add distinguishable new
+  sounds or only recolour old ones — and what makes rescoring, blind listening and evolution experiments
+  trustworthy.
+- **Licence compliance by construction.** Bundles carry their licence texts and notices; rack bundles pin
+  every module by sha256 in the MANIFEST, so licence provenance travels with the artefact and a host can
+  verify it before loading. Serving a GPL/AGPL bundle is conveyance, and the source offer is mechanical
+  (pinned commits + patches), not an afterthought.
+- **UI portability.** The CLAP webview draft extension means a plugin's *own* editor (not a generic
+  parameter list) runs anywhere: openDAW's device panel, our test host, the Synth.is plugin editor via
+  the bridge's translation to native `clap.gui`.
+- **Client-side DSP.** Audio is processed in the user's browser/device, not on a render farm — lower
+  cost, and no audio leaves the machine unless the user sends it.
+- **Racks as data.** A rack is a small JSON document, so it can be a preset, a genome in an evolutionary
+  loop, a pattern value in a live-coding language, or a track chain in a DAW — the same artefact moving
+  between discovery (evolution/measurement tooling), live performance (Strudel), and production (the
+  Synth.is plugin, openDAW).
+
 ## 1. The rack bundle
 
 A **rack bundle** is a directory (packed as `<name>.wclap-rack.tar.gz` with `tools/pack-rack.mjs`):

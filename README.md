@@ -2,7 +2,10 @@
 
 A proposed standard for **racks of WCLAP plugins**: a portable, hash-verified JSON document that any
 host with a CLAP runtime can render — in a browser, in Node, or natively inside a plugin via
-[`wclap-bridge`](https://github.com/WebCLAP/wclap-bridge). Read [SPEC.md](SPEC.md).
+[`wclap-bridge`](https://github.com/WebCLAP/wclap-bridge). Read [SPEC.md](SPEC.md) — including §0,
+the motivation: portability, embeddability and shareability of WCLAP plugins *and their combinations*
+between environments (Synth.is, Strudel, openDAW, DAWs via the bridge), plus sandboxing, bit-identical
+determinism for measurement, licence compliance by construction, UI portability and client-side DSP.
 
 A *rack bundle* is a directory (or `<name>.wclap-rack.tar.gz`):
 
