@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://webclap.org/schema/manifest.schema.json",
+  "title": "WCLAP rack bundle MANIFEST",
+  "description": "MANIFEST.json of a rack bundle directory: bundle key -> archive path and the sha256 of the module.wasm inside it.",
+  "type": "object",
+  "patternProperties": {
+    "^[^/]+$": {
+      "type": "object",
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "type": "string", "description": "path of the .wclap.tar.gz / .wclap dir / module.wasm, relative to the rack bundle directory" },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "sha256 hex of module.wasm" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

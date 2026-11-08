@@ -1,0 +1,9 @@
+{
+  "format": "wclap-rack",
+  "version": 1,
+  "name": "testfx -6 dB, then delay on (latency compensated per device)",
+  "devices": [
+    { "bundle": "testfx", "plugin": "is.synth.kromosynth.testfx", "on": true, "params": { "0": -6, "1": 0 } },
+    { "bundle": "testfx", "plugin": "is.synth.kromosynth.testfx", "on": true, "params": { "0": 0, "1": 1 } }
+  ]
+}

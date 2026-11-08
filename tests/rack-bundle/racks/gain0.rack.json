@@ -1,0 +1,8 @@
+{
+  "format": "wclap-rack",
+  "version": 1,
+  "name": "testfx at 0 dB (bit-exact passthrough)",
+  "devices": [
+    { "bundle": "testfx", "plugin": "is.synth.kromosynth.testfx", "on": true, "params": { "0": 0, "1": 0 } }
+  ]
+}

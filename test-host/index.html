@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>wclap-rack test host</title>
+<style>
+  body { font: 14px/1.4 system-ui, sans-serif; background: #16181d; color: #d7dae0; margin: 2rem; }
+  h1 { font-size: 1.2rem; }
+  .device { border: 1px solid #333; border-radius: 8px; padding: 0.6rem 0.8rem; margin: 0.6rem 0; max-width: 560px; }
+  .device-head { font-weight: 600; margin-bottom: 0.4rem; }
+  .param { display: flex; gap: 0.5rem; align-items: center; margin: 0.2rem 0; }
+  .param input[type=range] { flex: 1; }
+  #status { color: #8ab4f8; margin: 0.8rem 0; }
+  button { background: #2b6cb0; color: #fff; border: 0; border-radius: 6px; padding: 0.4rem 0.9rem; cursor: pointer; }
+</style>
+</head>
+<body>
+<h1>wclap-rack test host</h1>
+<p>Load a rack bundle (<code>.wclap-rack.tar.gz</code>) or a rack bundle directory. A 110&nbsp;Hz saw plays through the rack in realtime.</p>
+<p>
+  <input type="file" id="bundle" accept=".tar.gz,.tgz">
+  or directory: <input type="file" id="bundleDir" webkitdirectory>
+  <button id="load">Load &amp; play</button>
+</p>
+<div id="status"></div>
+<div id="devices"></div>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

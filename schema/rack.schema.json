@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://webclap.org/schema/rack.schema.json",
+  "title": "WCLAP Rack document",
+  "description": "A wclap-rack v1 document: an ordered serial chain of WCLAP audio-effect devices, each referencing a bundle by MANIFEST key. See SPEC.md.",
+  "type": "object",
+  "required": ["format", "version", "devices"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "format": { "const": "wclap-rack" },
+    "version": { "const": 1 },
+    "name": { "type": "string" },
+    "devices": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["bundle", "plugin"],
+        "properties": {
+          "bundle": { "type": "string", "description": "MANIFEST key of the WCLAP bundle" },
+          "plugin": { "type": "string", "description": "clap plugin id inside the bundle" },
+          "on": { "type": "boolean", "default": true, "description": "false = bit-transparent bypass" },
+          "params": {
+            "type": "object",
+            "description": "clap param id (string) or name -> raw CLAP value within [min, max]; applied at frame 0 of the device's render",
+            "additionalProperties": { "type": "number" }
+          },
+          "state": { "type": "string", "description": "base64 clap.state blob, loaded before params" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": true
+}

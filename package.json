@@ -1,0 +1,21 @@
+{
+  "name": "wclap-rack",
+  "version": "0.1.0",
+  "description": "Proposed standard for serial racks of WCLAP plugins: rack.json document, reference host, conformance harness and browser test host",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./reference-host/index.mjs",
+    "./host": "./reference-host/host.mjs",
+    "./rack": "./reference-host/rack.mjs",
+    "./bundle": "./reference-host/bundle.mjs"
+  },
+  "scripts": {
+    "test": "node --test tests/conformance.test.mjs",
+    "validate": "node tools/validate.mjs",
+    "render": "node tools/render.mjs",
+    "pack": "node tools/pack-rack.mjs"
+  },
+  "engines": { "node": ">=20" },
+  "keywords": ["wclap", "webclap", "clap", "rack", "audio", "wasm", "plugin"]
+}

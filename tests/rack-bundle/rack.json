@@ -1,0 +1,10 @@
+{
+  "$schema": "../../schema/rack.schema.json",
+  "format": "wclap-rack",
+  "version": 1,
+  "name": "testfx gain -6 dB then delay",
+  "devices": [
+    { "bundle": "testfx", "plugin": "is.synth.kromosynth.testfx", "on": true, "params": { "0": -6, "1": 0 } },
+    { "bundle": "testfx", "plugin": "is.synth.kromosynth.testfx", "on": true, "params": { "0": 0, "1": 1 } }
+  ]
+}

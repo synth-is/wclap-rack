@@ -1,0 +1,8 @@
+{
+  "format": "wclap-rack",
+  "version": 1,
+  "name": "all bypassed (bit-transparent)",
+  "devices": [
+    { "bundle": "testfx", "plugin": "is.synth.kromosynth.testfx", "on": false, "params": { "0": -24 } }
+  ]
+}
