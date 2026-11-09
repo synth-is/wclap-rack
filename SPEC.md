@@ -154,3 +154,26 @@ UI framework), split it into `wclap-rack-test-host` later — same pattern as We
   bundles as track chains is a natural mapping.
 - **Synth.is**: consumes rack bundles as presets in the plugin (native via `wclap-bridge`, or as a
   WCLAP itself), and evolves them in `kromosynth-burst` under the Synth.is profile (§2).
+
+## 7. Reserved for v2: parallel sends / multiple chains
+
+v1 is deliberately serial (§2: `devices` run in array order over one stereo stream). The Reason-style
+"parallel sends" shape — one source feeding several chains that are summed, with per-send gain — is a
+v2 routing extension, reserved here so v1 hosts and UIs stay compatible:
+
+- `devices[i].out` (optional, default `"main"`): the bus this device's output goes to — `"main"`, or
+  a bus name declared in a top-level `buses: [{ "name": "fx", "gain": 1.0 }]`.
+- `devices[i].sends` (optional): `[ { "to": "fx" | <device index> | "main", "gain": 0.5 } ]` — the
+  device's output is ALSO copied to the target bus/device input at `gain`, in addition to its `out`.
+- `source.sends` may appear with the same shape (the source can feed several chains directly).
+
+Semantics when present: each bus sums its inputs; `main` is the rack's output; a device whose `out`
+is a bus feeds that bus instead of the serial stream. v1 hosts MUST ignore unknown fields only if
+they also ignore the routing effect — i.e. a v1 host rendering a v2 document may produce a different
+(musically wrong) result, so v1 hosts SHOULD refuse `version: 2` documents rather than misrender
+them, and `version` stays `1` for purely serial racks.
+
+UI note (2026-11-09): the device-line UIs built so far (Synth.is plugin shell, Strudel rack viz panel,
+kromosynth-desktop sound cards) list devices with per-device view/params/bypass and are
+topology-agnostic — a v2 rack renders as the same list, with send controls added per line later. No
+UI work needs to change for v2 beyond that.
