@@ -76,7 +76,9 @@ MUST verify the sha256 of each `module.wasm` against the manifest and MUST refus
   `devices` process. Without a `source`, the host supplies the input audio (a DAW track, a rendered
   substrate, a test signal). `source.length` sets the rendered length in frames when no input audio is
   given (default one second). This is what makes a rack bundle fully self-contained: "Aether + chorus +
-  reverb" is one portable document.
+  reverb" is one portable document. `source.kind` (optional hint: `"sampler"`, `"synth"`, …) and
+  `source.files` (instrument files the plugin needs, e.g. an SFZ and its samples, a Faust genome wasm) are
+  defined in §8 — engine plugins are how a host delivers *any* instrument through the same rack vessel.
 - `bundle`: key into `MANIFEST.json`. `plugin`: the clap plugin id inside that bundle's factory.
 - `on: false`: **bypass** — the device is skipped and the stream passes through bit-transparent.
 - `params`: `{ "<param id as string>" | "<param name>": <raw CLAP value within [min, max]> }`, applied as
@@ -177,3 +179,33 @@ UI note (2026-11-09): the device-line UIs built so far (Synth.is plugin shell, S
 kromosynth-desktop sound cards) list devices with per-device view/params/bypass and are
 topology-agnostic — a v2 rack renders as the same list, with send controls added per line later. No
 UI work needs to change for v2 beyond that.
+
+## 8. Engine (source) plugins and file delivery
+
+A `source` plugin is often an **engine plugin**: a general player (SFZ sampler, Faust-graph runner)
+that needs *files* at runtime — an SFZ plus its samples, a Faust genome's wasm + JSON. A WCLAP module
+gets no file system from its host by default, so the rack document carries the files and the host
+delivers them:
+
+- `source.files` (optional): an array of `{ "path": "<path inside the module>", "archive": "<path inside
+  the rack bundle archive>" }`. Every `archive` file is part of the rack bundle (and so covered by the
+  bundle's licence texts). The host MUST make each file's bytes available to the source plugin at `path`
+  **before activate** (before the first render / before note events).
+- Delivery mechanism **`wclap.files/1`**: over the `clap.webview/3` port channel, before activation, the
+  host sends JSON frames `{"type":"wclap.files/1","op":"write","path":"<path>","data":"<base64>"}` (and
+  `{"op":"clear"}` on unload). The module writes them into its own writable file system (e.g. Emscripten
+  WasmFS). This one mechanism works identically in a browser worklet, Node, and a native host.
+  A native host MAY instead preopen a directory (`wclap_open_with_dirs`) and place `path`s under the
+  preopen mount, letting the module read them through WASI directly — but it MUST do so only in addition
+  to being able to serve `wclap.files/1`, since browser hosts have no preopens.
+- `source.kind` (optional, non-normative hint): `"sampler"` when the source is a sample-based instrument
+  whose files include an `.sfz`, `"synth"` for a generated-DSP instrument, etc. Hosts that cannot run wasm
+  at all (e.g. iOS, where JIT is forbidden) MAY use the hint + `files` to fall back to a native equivalent
+  player instead of running the WCLAP; a host that can run wasm MUST run the WCLAP as specified.
+
+Rationale: this is what makes the rack bundle the **single extraction/distribution vessel** — a CPPN+DSP
+genome rendered to SFZ, a free-form Faust genome, and a ported synth (Aether, …) all ship as
+`source` = engine plugin (or the ported plugin itself) + `devices` = effects, and load through one path
+in every host. The engine plugins' own licences ride in their WCLAP bundles as usual (sfizz is
+BSD-2-Clause; Faust-generated DSP code is the instrument author's own), so engine plugins do not tighten
+the licence posture of a public palette.

@@ -20,6 +20,20 @@
         "params": { "type": "object", "additionalProperties": { "type": "number" } },
         "state": { "type": "string" },
         "length": { "type": "integer", "description": "frames of audio to render when the caller gives no input audio (default 48000)" },
+        "kind": { "type": "string", "description": "optional non-normative hint: 'sampler' (files include an .sfz), 'synth' (generated DSP), … — lets wasm-less hosts fall back to a native player (SPEC §8)" },
+        "files": {
+          "type": "array",
+          "description": "files the source (engine) plugin needs, delivered before activate via wclap.files/1 or a preopen (SPEC §8)",
+          "items": {
+            "type": "object",
+            "required": ["path", "archive"],
+            "properties": {
+              "path": { "type": "string", "description": "path inside the module's file system" },
+              "archive": { "type": "string", "description": "path inside the rack bundle archive" }
+            },
+            "additionalProperties": false
+          }
+        },
         "notes": {
           "type": "array",
           "items": {
