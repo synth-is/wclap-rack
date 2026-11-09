@@ -45,6 +45,22 @@ export function validateRackDoc(rack) {
 		if (d.params !== undefined && (typeof d.params !== 'object' || d.params === null || Array.isArray(d.params))) errors.push(`devices[${i}].params must be an object`);
 		if (d.state !== undefined && typeof d.state !== 'string') errors.push(`devices[${i}].state must be a base64 string`);
 	});
+	const s = rack.source;
+	if (s !== undefined) {
+		if (typeof s !== 'object' || s === null || Array.isArray(s)) errors.push('rack.source must be an object');
+		else {
+			if (typeof s.bundle !== 'string' || !s.bundle) errors.push('source.bundle missing');
+			if (typeof s.plugin !== 'string' || !s.plugin) errors.push('source.plugin missing');
+			if (s.kind !== undefined && typeof s.kind !== 'string') errors.push('source.kind must be a string');
+			if (s.files !== undefined) {
+				if (!Array.isArray(s.files)) errors.push('source.files must be an array');
+				else s.files.forEach((f, i) => {
+					if (typeof f !== 'object' || f === null || typeof f.path !== 'string' || typeof f.archive !== 'string')
+						errors.push(`source.files[${i}] needs { path, archive } strings`);
+				});
+			}
+		}
+	}
 	return errors;
 }
 
@@ -55,7 +71,8 @@ export function validateRackDoc(rack) {
  */
 export async function validateRackBundle(rack, manifest, bundles) {
 	const errors = validateRackDoc(rack);
-	for (const d of rack.devices ?? []) {
+	const refs = [...(rack.devices ?? []), ...(rack.source ? [rack.source] : [])];
+	for (const d of refs) {
 		const entry = manifest?.[d.bundle];
 		if (!entry) { errors.push(`device for bundle "${d.bundle}" is not in the MANIFEST`); continue; }
 		const bytes = bundles?.[d.bundle];
@@ -74,11 +91,13 @@ const decodeState = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
  *   rack      parsed rack.json; an optional rack.source (instrument device) is rendered from its
  *             notes first and its output becomes the stream; without a source, `input` is required
  *   bundles   { bundleKey: archive/wasm bytes }
+ *   files     { archivePath: Uint8Array } — the rack bundle's other files, used to satisfy
+ *             rack.source.files entries ({ path, archive }) via wclap.files/1 before activate (SPEC §8)
  *   input     { left, right } Float32Arrays of equal length (or an array of channels)
  *   options   { sampleRate = 48000, blockSize = 512, preRoll = 4096 }
- * Returns { left, right, latency, tail, devices: [{ plugin, on, latency }], fingerprint }.
+ * Returns { left, right, latency, tail, devices: [{ plugin, on, latency }], fingerprint, hosts }.
  */
-export async function renderRack({ rack, bundles, input, sampleRate = 48000, blockSize = 512, preRoll = 4096 }) {
+export async function renderRack({ rack, bundles, files = {}, input, sampleRate = 48000, blockSize = 512, preRoll = 4096 }) {
 	const errors = validateRackDoc(rack);
 	if (errors.length) throw new Error(`invalid rack: ${errors.join('; ')}`);
 
@@ -109,6 +128,15 @@ export async function renderRack({ rack, bundles, input, sampleRate = 48000, blo
 		host.restore();
 		const plugin = host.createPlugin(s.plugin);
 		try {
+			if (s.files?.length) {
+				// SPEC §8: deliver the source's files before activate via wclap.files/1 port frames
+				const entries = s.files.map((f) => {
+					const data = files[f.archive];
+					if (!data) throw new Error(`rack.source.files: archive file "${f.archive}" not provided`);
+					return { path: f.path, data };
+				});
+				if (!plugin.deliverFiles(entries)) throw new Error('source plugin refused wclap.files/1 delivery (no clap.webview/3?)');
+			}
 			plugin.activate({ sampleRate, blockSize });
 			if (s.state) plugin.loadState(decodeState(s.state));
 			const events = [
@@ -154,7 +182,7 @@ export async function renderRack({ rack, bundles, input, sampleRate = 48000, blo
 		}
 	}
 	const left = cur[0].subarray(preRoll), right = (cur[1] ?? cur[0]).subarray(preRoll);
-	return { left, right, latency, tail, devices, fingerprint: fingerprint([left, right]) };
+	return { left, right, latency, tail, devices, fingerprint: fingerprint([left, right]), hosts };
 }
 
 /** Describe a bundle's plugins and params (for test hosts and tools). No rendering. */

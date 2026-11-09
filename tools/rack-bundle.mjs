@@ -4,7 +4,7 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 import { untar, loadBundleBytesAsync } from '../reference-host/index.mjs';
 
-/** Read a rack bundle directory into { rack, manifest, bundles: { key: archive bytes } }. */
+/** Read a rack bundle directory into { rack, manifest, bundles: { key: archive bytes }, files: { archivePath: bytes } }. */
 export function loadRackBundleDir(dir) {
 	const rack = JSON.parse(fs.readFileSync(path.join(dir, 'rack.json'), 'utf8'));
 	const manifest = JSON.parse(fs.readFileSync(path.join(dir, 'MANIFEST.json'), 'utf8'));
@@ -12,7 +12,16 @@ export function loadRackBundleDir(dir) {
 	for (const [key, entry] of Object.entries(manifest)) {
 		bundles[key] = new Uint8Array(fs.readFileSync(path.join(dir, entry.path)));
 	}
-	return { rack, manifest, bundles };
+	const files = {};
+	const walk = (d, base) => {
+		for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+			const full = path.join(d, e.name);
+			if (e.isDirectory()) walk(full, base);
+			else files[path.relative(base, full).split(path.sep).join('/')] = new Uint8Array(fs.readFileSync(full));
+		}
+	};
+	walk(dir, dir);
+	return { rack, manifest, bundles, files };
 }
 
 /** Read a packed rack bundle archive (.wclap-rack.tar.gz). */
@@ -29,7 +38,7 @@ export function loadRackBundleArchive(file) {
 	const manifest = JSON.parse(Buffer.from(files['MANIFEST.json']).toString('utf8'));
 	const bundles = {};
 	for (const [key, entry] of Object.entries(manifest)) bundles[key] = files[entry.path];
-	return { rack, manifest, bundles };
+	return { rack, manifest, bundles, files };
 }
 
 export function loadRackBundle(source) {

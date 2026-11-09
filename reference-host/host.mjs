@@ -530,6 +530,42 @@ export class WclapPlugin {
 		return !!ok;
 	}
 
+	/**
+	 * Host -> guest: one binary port frame via clap_plugin_webview.receive (vtable offset 8), SPEC §8.
+	 * Unlike guiReceive this does not require an open gui — file delivery happens before activate.
+	 */
+	portReceive(bytes) {
+		const h = this.h;
+		if (!this.webviewExt || !bytes?.length) return false;
+		const buf = h.malloc(bytes.length);
+		h.bytes().set(bytes, buf);
+		const ok = h.fn(h.u32(this.webviewExt + 8))(this.ptr, buf, bytes.length);
+		h.free(buf);
+		return !!ok;
+	}
+
+	/**
+	 * wclap.files/1 (SPEC §8): deliver files to the module before activate. `entries` is
+	 * [{ path, data }] with data a Uint8Array. Frame: u8 type=240, u8 flags=0, u16 reserved=0,
+	 * u16 pathLen, path UTF-8, u32 dataLen, data. Sends a type-241 clear first.
+	 */
+	deliverFiles(entries) {
+		if (!this.webviewExt) return false;
+		this.portReceive(new Uint8Array([241, 0, 0, 0]));
+		let ok = true;
+		for (const { path, data } of entries) {
+			const p = new TextEncoder().encode(path);
+			const frame = new Uint8Array(10 + p.length + data.length); // 4 hdr + 2 pathLen + path + 4 dataLen + data
+			frame[0] = 240; frame[1] = 0; frame[2] = 0; frame[3] = 0;
+			new DataView(frame.buffer).setUint16(4, p.length, true);
+			frame.set(p, 6);
+			new DataView(frame.buffer).setUint32(6 + p.length, data.length, true);
+			frame.set(data, 10 + p.length);
+			ok = this.portReceive(frame) && ok;
+		}
+		return ok;
+	}
+
 	/** clap_plugin.on_main_thread (vtable offset 44) — the guest's page updates are pumped through here. */
 	onMainThread() { if (this.guiCreated) this.call(44); }
 

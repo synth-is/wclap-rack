@@ -1,0 +1,6 @@
+{
+  "testfx": {
+    "path": "testfx.wclap.tar.gz",
+    "sha256": "f1323ee54f4bd602ee4980695ea5a764dc2e049d4e4d49792f6fe93f5e03bbba"
+  }
+}

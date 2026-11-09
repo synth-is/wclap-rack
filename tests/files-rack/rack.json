@@ -1,0 +1,18 @@
+{
+  "format": "wclap-rack",
+  "version": 1,
+  "name": "files-rack",
+  "source": {
+    "bundle": "testfx",
+    "plugin": "is.synth.kromosynth.testfx",
+    "kind": "sampler",
+    "files": [
+      { "path": "/instruments/hello.txt", "archive": "files/hello.txt" },
+      { "path": "/instruments/nested/params.json", "archive": "files/nested/params.json" }
+    ],
+    "notes": [ { "key": 69, "velocity": 0.9, "frame": 0, "frames": 4800 } ]
+  },
+  "devices": [
+    { "bundle": "testfx", "plugin": "is.synth.kromosynth.testfx", "on": true, "params": { "0": -6 } }
+  ]
+}

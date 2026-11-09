@@ -28,6 +28,7 @@ const KIND_LABEL = { instrument: 'Instrument', 'audio-fx': 'Audio effect', 'note
 const state = {
 	bundles: new Map(),
 	rack: { format: 'wclap-rack', version: 1, name: 'untitled rack', devices: [] },
+	files: null,  // the loaded rack bundle's raw file map { archivePath: Uint8Array } (SPEC §8 source.files)
 	ctx: null,
 	node: null,
 	autoPlay: null,
@@ -45,7 +46,7 @@ function rackFromFiles(files) {
 	const manifest = JSON.parse(td.decode(getFile(files, 'MANIFEST.json')));
 	const bundles = new Map();
 	for (const [key, entry] of Object.entries(manifest)) bundles.set(key, { bytes: getFile(files, entry.path), plugins: null });
-	return { rack, bundles };
+	return { rack, bundles, files };
 }
 
 async function loadRackArchive(file) {
@@ -119,7 +120,7 @@ function renderCatalog() {
 // ---------------------------------------------------------------------------
 
 async function rebuild() {
-	const { rack, bundles } = state;
+	const { rack, bundles, files } = state;
 	// for the in-memory model, build the MANIFEST (sha256 of each module.wasm) on the fly
 	const { sha256Hex } = await import('../reference-host/index.mjs');
 	const manifest = {};
@@ -151,7 +152,14 @@ async function rebuild() {
 		}
 	};
 	state.node = node;
-	node.port.postMessage({ type: 'load', rack, bundles: bundlesAB });
+	// SPEC §8: the rack bundle's non-bundle files, for source.files delivery (wclap.files/1)
+	const filesAB = {};
+	for (const f of rack.source?.files ?? []) {
+		const bytes = files?.[f.archive] ?? files?.[Object.keys(files ?? {}).find((k) => k.endsWith('/' + f.archive))];
+		if (!bytes) { $('#status').textContent = `INVALID: source.files archive "${f.archive}" not in the bundle`; return; }
+		filesAB[f.archive] = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+	}
+	node.port.postMessage({ type: 'load', rack, bundles: bundlesAB, files: filesAB });
 
 	if (rack.source) {
 		// source racks play their own notes; no saw
@@ -268,6 +276,7 @@ async function initialLoad() {
 	if (loaded) {
 		state.rack = loaded.rack;
 		state.bundles = loaded.bundles;
+		state.files = loaded.files;
 		if (state.rack.source) state.autoPlay = state.rack.source.notes?.[0] ?? null;
 		$('#rackName').value = state.rack.name ?? 'untitled rack';
 	}
@@ -285,7 +294,7 @@ $('#exportPack').onclick = async () => {
 	state.rack.name = $('#rackName').value;
 	$('#status').textContent = 'packing…';
 	const bundles = Object.fromEntries([...state.bundles].map(([k, v]) => [k, v.bytes]));
-	const { bytes } = await packRackBundle(state.rack.name || 'rack', state.rack, bundles);
+	const { bytes } = await packRackBundle(state.rack.name || 'rack', state.rack, bundles, state.files ?? {});
 	$('#status').textContent = `packed ${bytes} bytes — downloaded`;
 };
 
@@ -299,7 +308,7 @@ window.__assemble = {
 	},
 	addDevice: (bundle, plugin) => { state.rack.devices.push({ bundle, plugin, on: true, params: {} }); return rebuild(); },
 	setSource: (bundle, plugin) => { state.rack.source = { bundle, plugin, length: 48000, notes: [{ key: 60, velocity: 0.8, frames: 48000 }], params: {} }; state.autoPlay = state.rack.source.notes[0]; return rebuild(); },
-	buildPack: () => buildRackBundle(state.rack, Object.fromEntries([...state.bundles].map(([k, v]) => [k, v.bytes]))),
+	buildPack: () => buildRackBundle(state.rack, Object.fromEntries([...state.bundles].map(([k, v]) => [k, v.bytes])), state.files ?? {}),
 };
 
 if (new URLSearchParams(location.search).has('bundle')) initialLoad();

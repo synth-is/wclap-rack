@@ -191,13 +191,18 @@ delivers them:
   the rack bundle archive>" }`. Every `archive` file is part of the rack bundle (and so covered by the
   bundle's licence texts). The host MUST make each file's bytes available to the source plugin at `path`
   **before activate** (before the first render / before note events).
-- Delivery mechanism **`wclap.files/1`**: over the `clap.webview/3` port channel, before activation, the
-  host sends JSON frames `{"type":"wclap.files/1","op":"write","path":"<path>","data":"<base64>"}` (and
-  `{"op":"clear"}` on unload). The module writes them into its own writable file system (e.g. Emscripten
-  WasmFS). This one mechanism works identically in a browser worklet, Node, and a native host.
-  A native host MAY instead preopen a directory (`wclap_open_with_dirs`) and place `path`s under the
-  preopen mount, letting the module read them through WASI directly — but it MUST do so only in addition
-  to being able to serve `wclap.files/1`, since browser hosts have no preopens.
+- Delivery mechanism **`wclap.files/1`**: binary frames on the `clap.webview/3` port channel (the same
+  little-endian frame format as `juce_webclap_protocol.h`: `u8 type, u8 flags, u16 reserved, payload`),
+  sent by the host through `clap_plugin_webview.receive()` **before activate**. The wclap-rack standard
+  reserves frame types 240–255 (plugin-private types start at 64 and should stay below 240):
+  - **type 240 — write**: payload `u16 pathLen, path (UTF-8), u32 dataLen, data bytes`. The module writes
+    the bytes to `path` in its own writable file system (e.g. Emscripten WasmFS), creating parent dirs.
+  - **type 241 — clear**: no payload; the module removes everything it received via type 240 (sent on unload).
+  This one mechanism works identically in a browser worklet, Node, and a native host — `receive()` is a
+  plain plugin vtable call, no webview page needs to be open. A native host MAY instead preopen a
+  directory (`wclap_open_with_dirs`) and place `path`s under the preopen mount, letting the module read
+  them through WASI directly — but it MUST do so only in addition to being able to serve `wclap.files/1`,
+  since browser hosts have no preopens.
 - `source.kind` (optional, non-normative hint): `"sampler"` when the source is a sample-based instrument
   whose files include an `.sfz`, `"synth"` for a generated-DSP instrument, etc. Hosts that cannot run wasm
   at all (e.g. iOS, where JIT is forbidden) MAY use the hint + `files` to fall back to a native equivalent

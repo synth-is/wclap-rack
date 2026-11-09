@@ -59,10 +59,12 @@ export function download(filename, bytes, type = 'application/gzip') {
 
 /**
  * Build a packed rack bundle (.wclap-rack.tar.gz bytes) from the model — no download.
- * rack: parsed rack.json (with devices/source), bundles: { key: archive-or-wasm bytes }.
+ * rack: parsed rack.json (with devices/source), bundles: { key: archive-or-wasm bytes },
+ * files (optional): { archivePath: bytes } — the extra files a source's `files` entries reference
+ * (SPEC §8); each referenced archive file is packed at its archive path so the bundle is self-contained.
  * Returns { manifest, tar, gz }.
  */
-export async function buildRackBundle(rack, bundles) {
+export async function buildRackBundle(rack, bundles, files = {}) {
 	const entries = [['rack.json', new TextEncoder().encode(JSON.stringify(rack, null, 2) + '\n')]];
 	const manifest = {};
 	for (const [key, bytes] of Object.entries(bundles)) {
@@ -71,6 +73,10 @@ export async function buildRackBundle(rack, bundles) {
 		const { wasm } = await (await import('../reference-host/index.mjs')).loadBundleBytesAsync(bytes);
 		manifest[key] = { path: file, sha256: await sha256Hex(wasm) };
 	}
+	for (const f of rack.source?.files ?? []) {
+		const bytes = files[f.archive];
+		if (bytes && !entries.some(([n]) => n === f.archive)) entries.push([f.archive, bytes]);
+	}
 	entries.push(['MANIFEST.json', new TextEncoder().encode(JSON.stringify(manifest, null, 2) + '\n')]);
 	const tar = tarFiles(entries);
 	const gz = await gzip(tar);
@@ -78,8 +84,8 @@ export async function buildRackBundle(rack, bundles) {
 }
 
 /** Build and download. */
-export async function packRackBundle(name, rack, bundles) {
-	const { manifest, gz } = await buildRackBundle(rack, bundles);
+export async function packRackBundle(name, rack, bundles, files = {}) {
+	const { manifest, gz } = await buildRackBundle(rack, bundles, files);
 	download(`${name || 'rack'}.wclap-rack.tar.gz`, gz);
 	return { manifest, bytes: gz.length };
 }

@@ -28,6 +28,13 @@ class RackProcessor extends AudioWorkletProcessor {
 				const s = rack.source;
 				const host = await this.hostFor(s.bundle, bundles);
 				const plugin = host.createPlugin(s.plugin);
+				if (s.files?.length) {
+					// SPEC §8: deliver the source's files before activate via wclap.files/1 port frames
+					const missing = s.files.find((f) => !m.files?.[f.archive]);
+					if (missing) throw new Error(`source.files: archive file "${missing.archive}" not provided`);
+					const entries = s.files.map((f) => ({ path: f.path, data: new Uint8Array(m.files[f.archive]) }));
+					if (!plugin.deliverFiles(entries)) throw new Error('source plugin refused wclap.files/1 (no clap.webview/3)');
+				}
 				plugin.activate({ sampleRate, blockSize: B });
 				if (s.state) plugin.loadState(Uint8Array.from(atob(s.state), (c) => c.charCodeAt(0)));
 				const events = Object.entries(s.params ?? {}).map(([k, v]) => ({

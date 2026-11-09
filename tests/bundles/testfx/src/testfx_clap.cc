@@ -9,19 +9,28 @@
 //       id 0 "Gain":  dB, -24..+12, default 0, continuous; value-to-text is one decimal plus " dB" ("-6.0 dB").
 //       id 1 "Delay": stepped 0/1, default 0 ("off"/"on"); when on, the signal is delayed by exactly 64 samples.
 //   * Extensions: clap.audio-ports, clap.params, clap.state (the two param values), clap.latency (64 when the
-//     delay is on, 0 when off) and clap.tail (0).
+//     delay is on, 0 when off), clap.tail (0), and clap.webview/3 — whose receive() implements the
+//     wclap.files/1 file-delivery frames of the wclap-rack standard (SPEC §8): type 240 writes a file
+//     (u16 pathLen, path, u32 dataLen, data) into the plugin's in-memory file map, type 241 clears it.
+//     Every received frame is logged to stdout with an FNV-1a digest of path+bytes, so hosts can assert
+//     delivery in tests (the reference host collects stdout).
 //   * process(): no threads, no allocation, any block size (the loop handles any frames_count, up to 4096 and
 //     beyond). Parameter events apply at their sample offset. The input sample is read before the output sample
-//     is written, so in-place buffers are safe.
+//     is written, so in-place buffers are safe. With no audio input (rendered as a rack source), the input is
+//     silence, so the fixture can stand in as a source device in rack tests.
 
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <map>
 #include <new>
+#include <string>
+#include <vector>
 
 #include <clap/clap.h>
+#include <clap/ext/draft/webview.h>
 
 namespace {
 
@@ -57,6 +66,9 @@ struct TestFxPlugin {
   float delayLine[2][kDelaySamples];  // ring buffer, always fed; fixed storage, no allocation in process()
   uint32_t delayPos = 0;
   bool active = false;
+  // wclap.files/1 (SPEC §8): files delivered over the clap.webview/3 port before activate
+  std::map<std::string, std::vector<uint8_t>> files;
+  uint32_t filesDigest = 0x811c9dc5u;  // FNV-1a offset basis, over path + bytes of every write since the last clear
 };
 
 TestFxPlugin* self(const clap_plugin_t* p) { return static_cast<TestFxPlugin*>(p->plugin_data); }
@@ -225,6 +237,53 @@ uint32_t tailGet(const clap_plugin_t*) { return 0; }
 const clap_plugin_tail_t kTail = {tailGet};
 
 // ---------------------------------------------------------------------------------------------------------------
+// clap.webview/3 — no editor page; receive() carries wclap.files/1 frames (wclap-rack SPEC §8).
+// Frame: u8 type, u8 flags, u16 reserved, payload. Type 240 = write file (u16 pathLen, path, u32
+// dataLen, data); type 241 = clear all received files.
+
+int32_t webviewGetUri(const clap_plugin_t*, char* uri, uint32_t cap) {
+  if (cap > 0 && uri != nullptr) uri[0] = '\0';
+  return 1;
+}
+bool webviewGetResource(const clap_plugin_t*, const char*, char*, uint32_t, const clap_ostream_t*) { return false; }
+
+bool webviewReceive(const clap_plugin_t* p, const void* buffer, uint32_t size) {
+  TestFxPlugin* s = self(p);
+  if (size < 4) return false;
+  const uint8_t* b = static_cast<const uint8_t*>(buffer);
+  const uint8_t* pl = b + 4;
+  const uint32_t plen = size - 4;
+  auto rd16 = [&](uint32_t o) { return (uint16_t)(pl[o] | (pl[o + 1] << 8)); };
+  auto rd32 = [&](uint32_t o) {
+    return (uint32_t)pl[o] | ((uint32_t)pl[o + 1] << 8) | ((uint32_t)pl[o + 2] << 16) | ((uint32_t)pl[o + 3] << 24);
+  };
+  if (b[0] == 241) {  // clear
+    s->files.clear();
+    s->filesDigest = 0x811c9dc5u;
+    std::printf("wclap.files/1 clear files=0 digest=%08x\n", s->filesDigest);
+    return true;
+  }
+  if (b[0] != 240 || plen < 6) return false;  // write
+  const uint16_t pathLen = rd16(0);
+  if (plen < (uint32_t)(2 + pathLen + 4)) return false;
+  std::string path(reinterpret_cast<const char*>(pl) + 2, pathLen);
+  const uint32_t dataLen = rd32(2 + pathLen);
+  if (plen < (uint32_t)(6 + pathLen + dataLen)) return false;
+  const uint8_t* data = pl + 6 + pathLen;
+  s->files[path] = std::vector<uint8_t>(data, data + dataLen);
+  uint32_t h = s->filesDigest;
+  for (char c : path) { h ^= (uint8_t)c; h *= 0x01000193u; }
+  h ^= 0; h *= 0x01000193u;  // path/data separator
+  for (uint32_t i = 0; i < dataLen; ++i) { h ^= data[i]; h *= 0x01000193u; }
+  s->filesDigest = h;
+  std::printf("wclap.files/1 write path=%s bytes=%u files=%u digest=%08x\n", path.c_str(), dataLen,
+              (unsigned)s->files.size(), s->filesDigest);
+  return true;
+}
+
+const clap_plugin_webview_t kWebview = {webviewGetUri, webviewGetResource, webviewReceive};
+
+// ---------------------------------------------------------------------------------------------------------------
 // plugin
 
 bool pluginInit(const clap_plugin_t*) { return true; }
@@ -247,19 +306,21 @@ void pluginReset(const clap_plugin_t* p) { clearDelayLine(self(p)); }  // param 
 
 clap_process_status pluginProcess(const clap_plugin_t* p, const clap_process_t* proc) {
   TestFxPlugin* s = self(p);
-  if (!s->active || proc->audio_inputs_count < 1 || proc->audio_outputs_count < 1) return CLAP_PROCESS_ERROR;
-  const clap_audio_buffer_t* in = &proc->audio_inputs[0];
+  if (!s->active || proc->audio_outputs_count < 1) return CLAP_PROCESS_ERROR;
+  // no audio input (rendered as a rack source): the input is silence
+  const clap_audio_buffer_t* in = proc->audio_inputs_count > 0 ? &proc->audio_inputs[0] : nullptr;
   const clap_audio_buffer_t* out = &proc->audio_outputs[0];
-  if (!in->data32 || !out->data32 || in->channel_count < 1 || out->channel_count < 1) return CLAP_PROCESS_ERROR;
+  if (!out->data32 || out->channel_count < 1) return CLAP_PROCESS_ERROR;
+  if (in && (!in->data32 || in->channel_count < 1)) return CLAP_PROCESS_ERROR;
   const uint32_t frames = proc->frames_count;
-  const uint32_t inCh = std::min(in->channel_count, 2u);
+  const uint32_t inCh = in ? std::min(in->channel_count, 2u) : 0u;
   const uint32_t outCh = out->channel_count;
   const uint32_t total = proc->in_events ? proc->in_events->size(proc->in_events) : 0;
   uint32_t cursor = 0;
   for (uint32_t i = 0; i < frames; ++i) {
     if (proc->in_events) applyEvents(s, proc->in_events, cursor, i, total);
     for (uint32_t ch = 0; ch < outCh; ++ch) {
-      const float x = ch < inCh ? in->data32[ch][i] : 0.0f;  // read before writing: in-place safe
+      const float x = (in && ch < inCh) ? in->data32[ch][i] : 0.0f;  // read before writing: in-place safe
       float y;
       if (ch < 2) {
         y = s->delayOn ? s->delayLine[ch][s->delayPos] : x;
@@ -281,6 +342,7 @@ const void* pluginGetExtension(const clap_plugin_t*, const char* id) {
   if (!std::strcmp(id, CLAP_EXT_STATE)) return &kState;
   if (!std::strcmp(id, CLAP_EXT_LATENCY)) return &kLatency;
   if (!std::strcmp(id, CLAP_EXT_TAIL)) return &kTail;
+  if (!std::strcmp(id, CLAP_EXT_WEBVIEW)) return &kWebview;
   return nullptr;
 }
 void pluginOnMainThread(const clap_plugin_t*) {}
