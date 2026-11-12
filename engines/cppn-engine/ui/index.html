@@ -1,0 +1,466 @@
+<!doctype html>
+<!-- Kromosynth CPPN+DSP engine — editor page (MIT, see ../LICENSE).
+     Served from the bundle (ui/index.html); talks to the plugin through the host's clap.webview relay:
+     binary frames by window.parent.postMessage(ArrayBuffer) one way, 'message' events the other.
+     Frame = u8 type, u8 flags, u16 reserved, payload (little-endian); types are listed in
+     src/cppn_engine_clap.cc ("page protocol"). Opened on its own with ?genome=<url> it runs as a
+     preview without sound. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kromosynth CPPN + DSP</title>
+<style>
+  :root { --bg:#111014; --panel:#1a1920; --line:#2c2a35; --ink:#e7e4ee; --dim:#8f8a9e; --pos:#f2b05e; --neg:#5ec8f2; --hot:#ff5d8f; --ok:#7fd88f; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--ink); font:12px/1.35 -apple-system, "Segoe UI", system-ui, sans-serif; }
+  body { display:flex; flex-direction:column; min-height:100%; }
+  header { display:flex; align-items:center; gap:12px; padding:8px 12px; border-bottom:1px solid var(--line); }
+  header h1 { font-size:13px; font-weight:600; margin:0; letter-spacing:.02em; }
+  header .meta { color:var(--dim); }
+  #meter { width:120px; height:6px; background:#000; border-radius:3px; overflow:hidden; margin-left:auto; }
+  #meter i { display:block; height:100%; width:0; background:linear-gradient(90deg,var(--ok),var(--pos) 70%,var(--hot)); }
+  #status { color:var(--dim); min-width:70px; text-align:right; }
+  main { flex:1; display:grid; grid-template-columns: 300px 1fr; gap:10px; padding:10px; min-height:0; }
+  @media (max-width:720px) { main { grid-template-columns: 1fr; } }
+  .col { display:flex; flex-direction:column; gap:10px; min-width:0; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:8px; }
+  .panel h2 { font-size:11px; font-weight:600; margin:0 0 6px; color:var(--dim); text-transform:uppercase; letter-spacing:.06em; display:flex; justify-content:space-between; }
+  .pads { display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
+  .pad { position:relative; aspect-ratio:1; background:#0c0b10; border:1px solid var(--line); border-radius:4px; touch-action:none; cursor:crosshair; overflow:hidden; }
+  .pad.wide { grid-column: span 2; aspect-ratio: 2.2; }
+  .pad .cross { position:absolute; width:14px; height:14px; margin:-7px 0 0 -7px; border-radius:50%; border:2px solid var(--pos); background:rgba(242,176,94,.25); pointer-events:none; }
+  .pad .vline, .pad .hline { position:absolute; background:rgba(255,255,255,.07); pointer-events:none; }
+  .pad .vline { top:0; bottom:0; width:1px; left:50%; } .pad .hline { left:0; right:0; height:1px; top:50%; }
+  .pad label { position:absolute; left:6px; top:4px; color:var(--dim); pointer-events:none; }
+  .pad .read { position:absolute; right:6px; bottom:4px; color:var(--ink); pointer-events:none; font-variant-numeric: tabular-nums; }
+  .chips { display:flex; gap:4px; margin-top:4px; flex-wrap:wrap; }
+  button.chip { font:inherit; font-size:10px; color:var(--dim); background:#0c0b10; border:1px solid var(--line); border-radius:10px; padding:1px 7px; cursor:pointer; }
+  button.chip.bound { color:var(--ok); border-color:#2f5a3a; }
+  button.chip.arm { color:#111; background:var(--hot); border-color:var(--hot); animation: blink .7s infinite alternate; }
+  @keyframes blink { to { opacity:.55; } }
+  .row { display:grid; grid-template-columns: 74px 1fr 52px auto; align-items:center; gap:6px; margin:3px 0; }
+  .row input[type=range] { width:100%; accent-color: var(--pos); }
+  .row .val { text-align:right; font-variant-numeric: tabular-nums; color:var(--ink); }
+  .toggles { display:flex; flex-wrap:wrap; gap:6px 12px; margin-top:6px; }
+  .toggles label { display:flex; gap:4px; align-items:center; color:var(--dim); cursor:pointer; }
+  #keys { display:flex; height:54px; user-select:none; touch-action:none; position:relative; }
+  #keys .w { flex:1; background:#d9d6e2; border:1px solid #55525f; border-radius:0 0 3px 3px; }
+  #keys .b { position:absolute; top:0; width:3.6%; height:60%; background:#17161c; border:1px solid #000; border-radius:0 0 2px 2px; z-index:2; }
+  #keys .on { background:var(--pos) !important; }
+  #keys .root::after { content:""; display:block; width:5px; height:5px; border-radius:50%; background:var(--hot); margin:40px auto 0; }
+  .viz { flex:1; display:flex; flex-direction:column; min-height:0; }
+  canvas { width:100%; display:block; border-radius:4px; background:#0c0b10; }
+  #dsp { height:250px; } #cppn { height:190px; }
+  #pics { display:grid; grid-template-columns: repeat(auto-fill, minmax(74px, 1fr)); gap:6px; }
+  #pics figure { margin:0; } #pics canvas { aspect-ratio:1; image-rendering: pixelated; border:1px solid var(--line); }
+  #pics figcaption { color:var(--dim); font-size:10px; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .legend { color:var(--dim); font-size:10px; margin-top:4px; }
+  .legend b { font-weight:600; } .legend .p { color:var(--pos); } .legend .n { color:var(--neg); } .legend .h { color:var(--hot); }
+  .note { color:var(--dim); font-size:10px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Kromosynth CPPN + DSP</h1>
+  <span class="meta" id="meta">waiting for the engine…</span>
+  <div id="meter" title="output level"><i></i></div>
+  <span id="status"></span>
+</header>
+<main>
+  <div class="col">
+    <div class="panel">
+      <h2><span>Performance pads</span><button class="chip" id="reset" title="put every pad back to the sound as it was discovered">reset</button></h2>
+      <div class="pads">
+        <div><div class="pad" data-x="1" data-y="6" data-name="Duration / Pitch"></div></div>
+        <div><div class="pad" data-x="11" data-y="12" data-name="Weights"></div></div>
+        <div style="grid-column: span 2"><div class="pad wide" data-x="13" data-y="14" data-name="Frequencies"></div></div>
+      </div>
+      <p class="note">Each axis is a plugin parameter: automate it in the host, or click a chip and move a MIDI controller to bind it (click a bound chip to free it).</p>
+    </div>
+    <div class="panel">
+      <h2>Level and envelope</h2>
+      <div id="sliders"></div>
+      <div class="toggles" id="toggles"></div>
+    </div>
+    <div class="panel">
+      <h2><span>Audition</span><span class="note" style="text-transform:none;letter-spacing:0">dot = its own pitch</span></h2>
+      <div id="keys"></div>
+    </div>
+  </div>
+  <div class="col viz">
+    <div class="panel">
+      <h2><span>DSP patch</span><span class="note" id="dspinfo"></span></h2>
+      <canvas id="dsp"></canvas>
+      <div class="legend">line width = connection weight · <b class="p">positive</b> · <b class="n">negative</b> · <b class="h">moved by a pad</b> · squares = CPPN outputs feeding the patch</div>
+    </div>
+    <div class="panel">
+      <h2><span>CPPN</span><span class="note" id="cppninfo"></span></h2>
+      <canvas id="cppn"></canvas>
+    </div>
+    <div class="panel">
+      <h2><span>What each CPPN output draws</span><span class="note" style="text-transform:none;letter-spacing:0">across: the note, start to end · up: one cycle of the wave</span></h2>
+      <div id="pics"></div>
+    </div>
+  </div>
+</main>
+<script>
+"use strict";
+// ── protocol ─────────────────────────────────────────────────────────────────────────────────────
+const T = { HELLO: 64, SET: 65, NOTE: 66, LEARN: 67, CLEAR: 68, POLL: 69, DESC: 80, GENOME: 81, VALUES: 82 };
+const hosted = window.parent !== window;
+function send(type, build, size = 0) {
+  const buf = new ArrayBuffer(4 + size), dv = new DataView(buf);
+  dv.setUint8(0, type);
+  if (build) build(dv, 4);
+  if (hosted) window.parent.postMessage(buf, '*'); else demo.receive(type, dv);
+}
+const setParam = (id, v) => { state.values[id] = v; send(T.SET, (dv, o) => { dv.setUint32(o, id, true); dv.setFloat64(o + 4, v, true); }, 12); onValues(); };
+const note = (on, key, vel = 1) => send(T.NOTE, (dv, o) => { dv.setUint8(o, on ? 1 : 0); dv.setUint8(o + 1, key); dv.setFloat32(o + 4, vel, true); }, 8);
+const learn = (id) => send(T.LEARN, (dv, o) => dv.setInt32(o, id, true), 4);
+const clearCc = (id) => send(T.CLEAR, (dv, o) => dv.setUint32(o, id, true), 4);
+
+const state = { params: [], values: [], cc: [], learn: -1, rootKey: 60, genome: null, scheme: '', ready: false, voices: 0 };
+window.addEventListener('message', (ev) => {
+  const d = ev.data;
+  const buf = d instanceof ArrayBuffer ? d : ArrayBuffer.isView(d) ? d.buffer.slice(d.byteOffset, d.byteOffset + d.byteLength) : null;
+  if (!buf || buf.byteLength < 4) return;
+  handleFrame(new DataView(buf));
+});
+function handleFrame(dv) {
+  const type = dv.getUint8(0), bytes = new Uint8Array(dv.buffer, dv.byteOffset + 4, dv.byteLength - 4);
+  if (type === T.DESC) {
+    const j = JSON.parse(new TextDecoder().decode(bytes));
+    state.params = j.params; state.rootKey = j.rootKey; state.scheme = j.scheme; state.unsupported = j.unsupported || [];
+    state.ready = true; buildControls();
+  } else if (type === T.GENOME) {
+    try { setGenome(JSON.parse(new TextDecoder().decode(bytes))); } catch (e) { document.getElementById('meta').textContent = 'could not read the genome'; }
+  } else if (type === T.VALUES) {
+    const o = 4;
+    state.learn = dv.getInt32(o, true);
+    const peak = dv.getFloat32(o + 4, true);
+    state.voices = dv.getUint32(o + 8, true);
+    const n = dv.getUint32(o + 12, true);
+    for (let i = 0; i < n; i++) {
+      const v = dv.getFloat64(o + 16 + i * 12, true);
+      if (!dragging.has(i)) state.values[i] = v;
+      state.cc[i] = dv.getInt32(o + 16 + i * 12 + 8, true);
+    }
+    document.querySelector('#meter i').style.width = Math.min(100, Math.round(Math.sqrt(Math.min(1, peak)) * 100)) + '%';
+    document.getElementById('status').textContent = state.voices ? state.voices + (state.voices === 1 ? ' voice' : ' voices') : '';
+    onValues();
+  }
+}
+
+// ── controls ─────────────────────────────────────────────────────────────────────────────────────
+const dragging = new Set();
+const P = (id) => state.params.find((p) => p.id === id);
+const norm = (id, v) => { const p = P(id); return p ? (v - p.min) / (p.max - p.min) : 0.5; };
+const denorm = (id, t) => { const p = P(id); return p ? p.min + (p.max - p.min) * t : t; };
+// the Duration axis is spread so that short notes get room (a square-root curve over its range)
+const padT = (id, v) => id === 1 ? Math.sqrt(Math.max(0, norm(id, v))) : norm(id, v);
+const padV = (id, t) => id === 1 ? denorm(id, t * t) : denorm(id, t);
+const fmtVal = (id, v) => {
+  if (id === 1) return v.toFixed(2) + ' s';
+  if (id === 6) return (v >= 0 ? '+' : '') + v.toFixed(1) + ' st';
+  if (id === 0) return v.toFixed(1) + ' dB';
+  if (id === 2 || id === 3) return v.toFixed(3) + ' s';
+  return v.toFixed(2);
+};
+function chip(id, label) {
+  const b = document.createElement('button');
+  b.className = 'chip'; b.dataset.param = id; b.dataset.label = label;
+  b.addEventListener('click', () => { if (state.cc[id] >= 0) clearCc(id); else learn(state.learn === id ? -1 : id); });
+  return b;
+}
+function buildControls() {
+  document.querySelectorAll('.pad').forEach((pad) => {
+    if (pad.dataset.built) return;
+    pad.dataset.built = '1';
+    const xi = +pad.dataset.x, yi = +pad.dataset.y;
+    pad.innerHTML = '<span class="vline"></span><span class="hline"></span><label></label><span class="cross"></span><span class="read"></span>';
+    pad.querySelector('label').textContent = pad.dataset.name;
+    const move = (e) => {
+      const r = pad.getBoundingClientRect();
+      const tx = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), ty = Math.min(1, Math.max(0, 1 - (e.clientY - r.top) / r.height));
+      setParam(xi, padV(xi, tx)); setParam(yi, padV(yi, ty));
+    };
+    pad.addEventListener('pointerdown', (e) => { pad.setPointerCapture(e.pointerId); dragging.add(xi); dragging.add(yi); move(e); });
+    pad.addEventListener('pointermove', (e) => { if (dragging.has(xi)) move(e); });
+    const up = () => { dragging.delete(xi); dragging.delete(yi); };
+    pad.addEventListener('pointerup', up); pad.addEventListener('pointercancel', up);
+    pad.addEventListener('dblclick', () => { setParam(xi, P(xi).def); setParam(yi, P(yi).def); });
+    const chips = document.createElement('div');
+    chips.className = 'chips';
+    chips.append(chip(xi, '↔ ' + P(xi).name), chip(yi, '↕ ' + P(yi).name));
+    pad.parentNode.append(chips);
+  });
+  const sl = document.getElementById('sliders');
+  if (!sl.children.length) for (const id of [0, 2, 3]) {
+    const p = P(id), row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `<span>${p.name}</span><input type="range" min="0" max="1" step="0.001" data-param="${id}"><span class="val"></span>`;
+    const inp = row.querySelector('input');
+    inp.addEventListener('pointerdown', () => dragging.add(id));
+    inp.addEventListener('pointerup', () => dragging.delete(id));
+    inp.addEventListener('input', () => setParam(id, denorm(id, +inp.value)));
+    row.append(chip(id, 'MIDI'));
+    sl.append(row);
+  }
+  const tg = document.getElementById('toggles');
+  if (!tg.children.length) for (const id of [9, 10, 8, 7]) {
+    const p = P(id); if (!p) continue;
+    const l = document.createElement('label');
+    l.innerHTML = `<input type="checkbox" data-param="${id}"> ${p.name}`;
+    l.querySelector('input').addEventListener('change', (e) => setParam(id, e.target.checked ? 1 : 0));
+    tg.append(l);
+  }
+  buildKeys();
+  onValues();
+}
+document.getElementById('reset').addEventListener('click', () => { for (const id of [1, 6, 11, 12, 13, 14]) if (P(id)) setParam(id, id === 1 ? state.values[1] : P(id).def); });
+
+let lastGeo = '';
+function onValues() {
+  if (!state.ready) return;
+  document.querySelectorAll('.pad').forEach((pad) => {
+    const xi = +pad.dataset.x, yi = +pad.dataset.y, vx = state.values[xi], vy = state.values[yi];
+    if (vx == null || vy == null) return;
+    const c = pad.querySelector('.cross');
+    c.style.left = (padT(xi, vx) * 100) + '%'; c.style.top = ((1 - padT(yi, vy)) * 100) + '%';
+    pad.querySelector('.read').textContent = xi === 1 ? fmtVal(1, vx) + ' · ' + fmtVal(6, vy) : vx.toFixed(2) + ', ' + vy.toFixed(2);
+  });
+  document.querySelectorAll('input[type=range][data-param]').forEach((inp) => {
+    const id = +inp.dataset.param; if (state.values[id] == null) return;
+    if (!dragging.has(id)) inp.value = norm(id, state.values[id]);
+    inp.parentNode.querySelector('.val').textContent = fmtVal(id, state.values[id]);
+  });
+  document.querySelectorAll('input[type=checkbox][data-param]').forEach((inp) => { inp.checked = (state.values[+inp.dataset.param] ?? 0) >= 0.5; });
+  document.querySelectorAll('button.chip[data-param]').forEach((b) => {
+    const id = +b.dataset.param, cc = state.cc[id] ?? -1;
+    b.classList.toggle('bound', cc >= 0); b.classList.toggle('arm', state.learn === id);
+    b.textContent = state.learn === id ? b.dataset.label + ' · move a controller' : cc >= 0 ? b.dataset.label + ' · CC ' + cc : b.dataset.label;
+  });
+  const geo = [11, 12, 13, 14].map((i) => (state.values[i] ?? 0.5).toFixed(3)).join(',');
+  if (geo !== lastGeo) { lastGeo = geo; scheduleDraw(); }
+}
+
+function buildKeys() {
+  const el = document.getElementById('keys'); if (el.children.length) return;
+  const lo = state.rootKey - 12, hi = state.rootKey + 12, isBlack = (k) => [1, 3, 6, 8, 10].includes(((k % 12) + 12) % 12);
+  const whites = []; for (let k = lo; k <= hi; k++) if (!isBlack(k)) whites.push(k);
+  const down = new Set();
+  const press = (k, on) => { if (on === down.has(k)) return; on ? down.add(k) : down.delete(k); note(on, k, 1); el.querySelector(`[data-k="${k}"]`)?.classList.toggle('on', on); };
+  const mk = (k, cls) => { const d = document.createElement('div'); d.className = cls + (k === state.rootKey ? ' root' : ''); d.dataset.k = k;
+    d.addEventListener('pointerdown', (e) => { d.setPointerCapture(e.pointerId); press(k, true); });
+    d.addEventListener('pointerup', () => press(k, false)); d.addEventListener('pointercancel', () => press(k, false)); return d; };
+  whites.forEach((k) => el.append(mk(k, 'w')));
+  for (let k = lo; k <= hi; k++) if (isBlack(k)) { const b = mk(k, 'b'); const wi = whites.findIndex((w) => w > k); b.style.left = (wi / whites.length * 100 - 1.8) + '%'; el.append(b); }
+}
+
+// ── genome model: the same pad mapping the engine applies (GenomeGeometryMapper) ──────────────────
+const jsHash = (str) => { let h = 0; for (let i = 0; i < str.length; i++) { h = ((h << 5) - h) + str.charCodeAt(i); h |= 0; } return Math.abs(h); };
+const roll = (v, lo, hi) => { const r = hi - lo; let o = (v - lo) % r; if (o < 0) o += r; return lo + o; };
+const isNetOut = (n) => /NetworkOutput/.test(n.name || '');
+let model = null;
+function setGenome(raw) {
+  const g = raw.genome ?? raw;
+  let patch = g.asNEATPatch;
+  if (patch && typeof patch !== 'string') { const ks = Object.keys(patch); patch = ks.every((k) => /^\d+$/.test(k)) ? ks.sort((a, b) => a - b).map((k) => patch[k]).join('') : JSON.stringify(patch); }
+  const pj = patch ? JSON.parse(patch) : { nodes: [], connections: [] };
+  const obj = (x) => typeof x === 'string' ? JSON.parse(x) : x;
+  const nodes = (pj.nodes || []).map(obj), conns = (pj.connections || []).map(obj);
+  const pos = new Map();
+  nodes.forEach((n, i) => {
+    const h = jsHash('patch-' + (n.id || i)); let x, y;
+    if (n.name === 'OscillatorNode' || n.name === 'NoteOscillatorNode') { x = -0.8; y = (h % 100) / 50 - 1; }
+    else if (n.name === 'OutNode' || n.name === 'NetworkOutputNode') { x = 0.8; y = (h % 100) / 50 - 1; }
+    else { x = (h % 200) / 100 - 1; y = ((h >> 8) % 200) / 100 - 1; }
+    pos.set(n.id, { x, y });
+  });
+  const cpos = conns.map((c) => { const a = pos.get(c.sourceNode), b = pos.get(c.targetNode); return a && b ? { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 } : { x: 0, y: 0 }; });
+  const wn = g.waveNetwork || {}, off = wn.offspring || (wn.nodes ? wn : null);
+  let cppn = null;
+  if (off) {
+    const cn = off.nodes || [], h = jsHash('wave-' + (cn.length - 1));
+    cppn = { nodes: cn, conns: off.connections || [], inputs: off.inputNodeCount || 0, outputs: off.outputNodeCount || 0,
+             shiftPos: { x: (h % 200) / 100 - 1, y: ((h >> 8) % 200) / 100 - 1 } };
+  }
+  model = { nodes, conns, pos, cpos, cppn };
+  layoutDsp(); layoutCppn();
+  const dspNodes = nodes.filter((n) => !isNetOut(n) && n.name !== 'OutNode').length;
+  document.getElementById('meta').textContent = `${state.scheme || 'CPPN'} · ${dspNodes} DSP nodes · ${nodes.filter(isNetOut).length} CPPN outputs in the patch` + ((state.unsupported || []).length ? ' · not played: ' + state.unsupported.join(', ') : '');
+  scheduleDraw();
+}
+function geo() { const v = state.values; return { wdx: ((v[11] ?? 0.5) - 0.5) * 2, wdy: ((v[12] ?? 0.5) - 0.5) * 2, fdx: ((v[13] ?? 0.5) - 0.5) * 2, fdy: ((v[14] ?? 0.5) - 0.5) * 2 }; }
+const on = (dx, dy) => !(Math.abs(dx) < 0.01 && Math.abs(dy) < 0.01);
+function currentWeights() {
+  const { wdx, wdy } = geo(), act = on(wdx, wdy);
+  const dsp = model.conns.map((c, i) => act ? roll(c.weight + (wdx * model.cpos[i].x + wdy * model.cpos[i].y) * 5, -3, 3) : c.weight);
+  let cp = null, shift = 0;
+  if (model.cppn) { shift = act ? (wdx * model.cppn.shiftPos.x + wdy * model.cppn.shiftPos.y) * 5 : 0; cp = model.cppn.conns.map((c) => act ? roll(c.weight + shift, -3, 3) : c.weight); }
+  return { dsp, cppn: cp, shift, act };
+}
+function currentFreq(n) {
+  const { fdx, fdy } = geo(), p = model.pos.get(n.id); if (!p) return null;
+  const infl = on(fdx, fdy) ? fdx * p.x + fdy * p.y : 0;
+  if (n.name === 'NoteNetworkOutputNode') { const o = (n.noteOffset || 0) + infl * 24; return { hz: o !== 0 ? 440 * Math.pow(2, o / 12) : (n.frequency ?? 440), moved: infl !== 0 }; }
+  if (n.name === 'NoteOscillatorNode') return { hz: n.noteOffset ? 440 * Math.pow(2, n.noteOffset / 12) : 440, moved: false };
+  if (n.frequency !== undefined) { const b = parseFloat(n.frequency), base = isNaN(b) ? 440 : b; return { hz: infl !== 0 ? Math.min(10000, Math.max(20, base + infl * 500)) : base, moved: infl !== 0 }; }
+  return null;
+}
+
+// ── layouts ──────────────────────────────────────────────────────────────────────────────────────
+function layoutDsp() {
+  const m = model, key = (id) => id === 0 ? '#out' : String(id);
+  const depth = new Map([['#out', 0]]);
+  for (let pass = 0; pass < m.nodes.length + 2; pass++) {
+    let ch = false;
+    for (const c of m.conns) { const t = depth.get(key(c.targetNode)); if (t == null) continue; const s = key(c.sourceNode); if (!depth.has(s) || depth.get(s) > t + 1 && false) { depth.set(s, t + 1); ch = true; } }
+    if (!ch) break;
+  }
+  const dspDepths = m.nodes.filter((n) => !isNetOut(n)).map((n) => depth.get(n.name === 'OutNode' ? '#out' : String(n.id))).filter((d) => d != null);
+  const max = Math.max(1, ...dspDepths), layers = new Map();
+  const put = (d, e) => { if (!layers.has(d)) layers.set(d, []); if (!layers.get(d).some((x) => x.k === e.k)) layers.get(d).push(e); };
+  for (const n of m.nodes) {
+    const k = n.name === 'OutNode' ? '#out' : String(n.id);
+    if (isNetOut(n)) put(max + 2, { k, n });                       // CPPN outputs: one column on the left
+    else put(depth.has(k) ? depth.get(k) : max + 1, { k, n });     // DSP nodes that reach nothing: next to them, dimmed
+  }
+  const cols = [...layers.keys()].sort((a, b) => b - a);
+  m.dspXY = new Map();
+  cols.forEach((d, ci) => { const L = layers.get(d); L.forEach((e, i) => m.dspXY.set(e.k, { x: cols.length > 1 ? ci / (cols.length - 1) : 0.5, y: (i + 0.5) / L.length, n: e.n, lost: !depth.has(e.k) })); });
+}
+function layoutCppn() {
+  const c = model.cppn; if (!c) return;
+  const used = new Set(model.nodes.filter(isNetOut).map((n) => parseInt(n.type, 10)).filter((x) => !isNaN(x)));
+  c.used = used;
+  const byType = { in: [], hid: [], out: [] };
+  c.nodes.forEach((n, i) => (n.nodeType === 'Bias' || n.nodeType === 'Input' ? byType.in : n.nodeType === 'Output' ? byType.out : byType.hid).push(i));
+  const layerOf = (i) => typeof c.nodes[i].layer === 'number' ? c.nodes[i].layer : 5;
+  const hl = [...new Set(byType.hid.map(layerOf))].sort((a, b) => a - b);
+  c.xy = new Array(c.nodes.length);
+  byType.in.forEach((i, k) => c.xy[i] = { x: 0.05, y: (k + 0.5) / byType.in.length });
+  byType.out.forEach((i, k) => c.xy[i] = { x: 0.95, y: (k + 0.5) / byType.out.length, out: k });
+  hl.forEach((L, li) => { const ids = byType.hid.filter((i) => layerOf(i) === L); ids.forEach((i, k) => c.xy[i] = { x: 0.15 + 0.7 * (li + 1) / (hl.length + 1), y: (k + 0.5) / ids.length }); });
+  c.ix = new Map(c.nodes.map((n, i) => [n.gid, i]));
+}
+
+// ── drawing ──────────────────────────────────────────────────────────────────────────────────────
+let drawQueued = false;
+function scheduleDraw() { if (drawQueued || !model) return; drawQueued = true; requestAnimationFrame(() => { drawQueued = false; draw(); }); }
+window.addEventListener('resize', scheduleDraw);
+function fit(cv) { const r = cv.getBoundingClientRect(), d = window.devicePixelRatio || 1; cv.width = Math.max(10, r.width * d); cv.height = Math.max(10, r.height * d); const g = cv.getContext('2d'); g.setTransform(d, 0, 0, d, 0, 0); return { g, w: r.width, h: r.height }; }
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function edge(g, a, b, w, moved, base) {
+  g.beginPath(); g.moveTo(a.x, a.y);
+  const mx = (a.x + b.x) / 2; g.bezierCurveTo(mx, a.y, mx, b.y, b.x, b.y);
+  g.lineWidth = 0.6 + Math.min(3.2, Math.abs(w) * 1.1);
+  g.strokeStyle = w >= 0 ? css('--pos') : css('--neg'); g.globalAlpha = 0.25 + Math.min(0.6, Math.abs(w) / 3 * 0.6);
+  g.stroke();
+  if (moved > 0.02) { g.lineWidth += 2.5; g.strokeStyle = css('--hot'); g.globalAlpha = Math.min(0.75, 0.15 + moved / 3); g.stroke(); }
+  g.globalAlpha = 1;
+}
+const SHORT = { GainNode: 'gain', FilterNode: 'filter', OscillatorNode: 'osc', NoteOscillatorNode: 'osc', AudioBufferSourceNode: 'buffer', WavetableNode: 'wavetable', AdditiveNode: 'additive', WaveShaperNode: 'shaper', DelayNode: 'delay', FeedbackDelayNode: 'fb delay', CompressorNode: 'compressor', ConvolverNode: 'convolver', OutNode: 'out', FaustNode: 'faust' };
+function draw() {
+  if (!model) return;
+  const W = currentWeights();
+  // DSP patch
+  { const { g, w, h } = fit(document.getElementById('dsp')); g.clearRect(0, 0, w, h); g.font = '10px system-ui';
+    const xy = (k) => { const p = model.dspXY.get(k === 0 ? '#out' : String(k)); return p ? { x: 84 + p.x * (w - 84 - 26), y: 12 + p.y * (h - 30), n: p.n, lost: p.lost } : null; };
+    let movedCount = 0;
+    model.conns.forEach((c, i) => { const a = xy(c.sourceNode), b = xy(c.targetNode); if (!a || !b) return; const d = Math.abs(W.dsp[i] - c.weight); if (d > 0.02) movedCount++; edge(g, a, b, W.dsp[i], d, c.weight); });
+    for (const [k, p] of model.dspXY) {
+      const q = xy(k === '#out' ? 0 : k), n = p.n, no = isNetOut(n), f = currentFreq(n);
+      g.fillStyle = no ? '#2a2733' : k === '#out' ? css('--ok') : '#3a3646'; g.strokeStyle = f && f.moved ? css('--hot') : '#6b6680'; g.lineWidth = f && f.moved ? 2 : 1;
+      if (no) { g.fillRect(q.x - 5, q.y - 5, 10, 10); g.strokeRect(q.x - 5, q.y - 5, 10, 10); } else { g.beginPath(); g.arc(q.x, q.y, 6, 0, 6.3); g.fill(); g.stroke(); }
+      g.fillStyle = f && f.moved ? css('--hot') : css('--dim'); g.globalAlpha = p.lost ? 0.45 : 1;
+      if (no) { const label = '#' + n.type + (f ? '  ' + (f.hz >= 100 ? Math.round(f.hz) : f.hz.toFixed(1)) + ' Hz' : ''); g.fillText(label, q.x - 10 - g.measureText(label).width, q.y + 3); }
+      else { const label = (n.name === 'FaustNode' && n.templateName ? n.templateName : (SHORT[n.name] || n.name || '')) + (f ? ' ' + Math.round(f.hz) : ''); g.fillText(label, Math.min(w - 2 - g.measureText(label).width, Math.max(2, q.x - g.measureText(label).width / 2)), q.y + 17 > h - 2 ? q.y - 9 : q.y + 17); }
+      g.globalAlpha = 1;
+    }
+    document.getElementById('dspinfo').textContent = movedCount ? movedCount + ' of ' + model.conns.length + ' connections moved' : model.conns.length + ' connections';
+  }
+  // CPPN
+  const c = model.cppn;
+  { const { g, w, h } = fit(document.getElementById('cppn')); g.clearRect(0, 0, w, h); g.font = '9px system-ui';
+    if (c) {
+      const xy = (i) => ({ x: 14 + c.xy[i].x * (w - 28), y: 10 + c.xy[i].y * (h - 20) });
+      c.conns.forEach((cn, i) => { const a = c.ix.get(cn.sourceID), b = c.ix.get(cn.targetID); if (a == null || b == null) return; edge(g, xy(a), xy(b), W.cppn[i], Math.abs(W.cppn[i] - cn.weight), cn.weight); });
+      c.nodes.forEach((n, i) => { const q = xy(i), o = c.xy[i].out, usedOut = o != null && c.used.has(o);
+        g.beginPath(); g.arc(q.x, q.y, o != null ? (usedOut ? 4.5 : 2.5) : 4, 0, 6.3);
+        g.fillStyle = n.nodeType === 'Input' || n.nodeType === 'Bias' ? '#55506a' : usedOut ? css('--pos') : '#3a3646'; g.fill();
+        if (o == null && n.nodeType === 'Hidden') { g.fillStyle = css('--dim'); const t = (n.activationFunction || '').replace('BipolarSigmoid', 'sigmoid').replace('StepFunction', 'step').toLowerCase(); g.fillText(t, q.x - g.measureText(t).width / 2, q.y - 6); }
+        if (usedOut) { g.fillStyle = css('--ink'); g.fillText('#' + o, q.x - 20, q.y + 3); } });
+      document.getElementById('cppninfo').textContent = c.nodes.length + ' nodes · ' + c.conns.length + ' connections' + (W.act ? ' · every weight shifted by ' + (W.shift >= 0 ? '+' : '') + W.shift.toFixed(2) + ', wrapped to ±3' : '');
+    }
+  }
+  drawPictures(W);
+}
+
+// ── the CPPN itself, in the page, to draw what each output computes ───────────────────────────────
+const ACT = {
+  NullFn: () => 0, Linear: (x) => Math.abs(x), BipolarSigmoid: (x) => 2 / (1 + Math.exp(-4.9 * x)) - 1, PlainSigmoid: (x) => 1 / (1 + Math.exp(-x)),
+  Gaussian: (x) => 2 * Math.exp(-Math.pow(x * 2.5, 2)) - 1, Sine: Math.sin, Sine2: (x) => Math.sin(2 * x), StepFunction: (x) => x <= 0 ? -1 : 1,
+  sin: Math.sin, cos: Math.cos, arctan: Math.atan,
+  spike: (x) => { const f = Math.floor(x); return f % 2 === 0 ? 1 - 2 * (x - f) : -1 + 2 * (x - f); },
+  triangle: (x) => (2 / Math.PI) * Math.asin(Math.sin(x)), sawtooth: (x) => 2 * ((x / (2 * Math.PI)) - Math.floor(0.5 + (x / (2 * Math.PI)))),
+};
+function buildNet(weights) {
+  const c = model.cppn, n = c.nodes.length, bias = c.nodes.filter((x) => x.nodeType === 'Bias').length, tin = bias + c.inputs;
+  const inc = Array.from({ length: n }, () => []);
+  c.conns.forEach((cn, i) => { const a = c.ix.get(cn.sourceID), b = c.ix.get(cn.targetID); if (a != null && b != null) inc[b].push([a, weights[i]]); });
+  for (const L of inc) for (let i = 0; i < L.length; i++) for (let j = i + 1; j < L.length; j++) if (L[j][0] === L[i][0]) L[i][1] = L[j][1];  // a repeat counts at the last weight
+  const order = [], st = new Uint8Array(n);
+  const visit = (v) => { if (st[v] || v < tin) return; st[v] = 1; for (const [a] of inc[v]) visit(a); order.push(v); };
+  for (const o of c.used) if (tin + o < n) visit(tin + o);
+  const acts = c.nodes.map((x) => ACT[x.activationFunction] || ((v) => v)), sig = new Float64Array(n);
+  for (let i = 0; i < bias; i++) sig[i] = 1;
+  return (inputs) => { for (let i = 0; i < c.inputs; i++) sig[bias + i] = inputs[i] ?? 0; for (const v of order) { let p = 0; for (const [a, w] of inc[v]) p += sig[a] * w; sig[v] = acts[v](p); } return (o) => sig[tin + o]; };
+}
+function drawPictures(W) {
+  const c = model.cppn, host = document.getElementById('pics'); if (!c) { host.textContent = ''; return; }
+  const outs = [...c.used].sort((a, b) => a - b);
+  if (host.children.length !== outs.length) { host.textContent = ''; for (const o of outs) { const f = document.createElement('figure'); f.innerHTML = `<canvas width="48" height="48"></canvas><figcaption></figcaption>`; f.dataset.out = o; host.append(f); } }
+  const evalNow = buildNet(W.cppn), evalBase = W.act ? buildNet(c.conns.map((x) => x.weight)) : null;
+  const S = 48, vel = 1, imgs = outs.map(() => new ImageData(S, S)), diff = outs.map(() => 0);
+  for (let py = 0; py < S; py++) for (let px = 0; px < S; px++) {
+    const t = -1 + 2 * px / (S - 1), y = 1 - 2 * py / (S - 1);
+    // the engine's inputs per scheme; the vertical axis runs through one cycle of the periodic input
+    const inputs = c.inputs >= 6 ? [(y + 1) / 2, Math.sin(Math.PI * (y + 1)), t, vel, state.values[4] ?? 0.5, state.values[5] ?? 0.5] : c.inputs >= 4 ? [y, Math.sin((c.nodes.envelopePeriods ?? 5) * t), t, vel] : [y * vel, t];
+    const get = evalNow(inputs), vals = outs.map((o) => get(o));
+    let base = null; if (evalBase) { const gb = evalBase(inputs); base = outs.map((o) => gb(o)); }
+    outs.forEach((o, k) => { const v = Math.max(-1, Math.min(1, vals[k])), d = imgs[k].data, i = (py * S + px) * 4;
+      // positive towards amber, negative towards blue
+      d[i] = v > 0 ? 40 + 202 * v : 40 - 30 * -v; d[i + 1] = v > 0 ? 36 + 140 * v : 36 + 164 * -v; d[i + 2] = v > 0 ? 44 + 50 * v : 44 + 198 * -v; d[i + 3] = 255;
+      if (base) diff[k] += Math.abs(vals[k] - base[k]); });
+  }
+  outs.forEach((o, k) => { const f = host.children[k]; f.querySelector('canvas').getContext('2d').putImageData(imgs[k], 0, 0);
+    const users = model.nodes.filter((n) => isNetOut(n) && parseInt(n.type, 10) === o).length, ch = W.act ? ' · changed ' + Math.round(diff[k] / (S * S) * 50) + '%' : '';
+    f.querySelector('figcaption').textContent = 'output ' + o + (users > 1 ? ' ×' + users : '') + ch; f.querySelector('canvas').style.borderColor = W.act && diff[k] / (S * S) > 0.02 ? css('--hot') : css('--line'); });
+}
+
+// ── start ────────────────────────────────────────────────────────────────────────────────────────
+// Without a host the page still runs: ?genome=<url> loads a genome and the controls move a local copy.
+const demo = { receive(type, dv) {
+  if (type === T.SET) { state.values[dv.getUint32(4, true)] = dv.getFloat64(8, true); }
+  if (type === T.LEARN) { state.learn = dv.getInt32(4, true); onValues(); }
+  if (type === T.CLEAR) { state.cc[dv.getUint32(4, true)] = -1; onValues(); }
+} };
+async function startDemo() {
+  const names = ['Volume', 'Duration', 'Attack', 'Release', 'CPPN X', 'CPPN Y', 'Pitch', 'DC Filter', 'Auto Level', 'Limiter', 'Soft Clip', 'Weights X', 'Weights Y', 'Frequencies X', 'Frequencies Y'];
+  const rng = [[-60, 12, 0], [0.05, 30, 4], [0, 2, 0.005], [0, 3, 0.1], [0, 1, 0.5], [0, 1, 0.5], [-36, 36, 0], [0, 1, 1], [0, 1, 1], [0, 1, 1], [0, 1, 1], [0, 1, 0.5], [0, 1, 0.5], [0, 1, 0.5], [0, 1, 0.5]];
+  state.params = names.map((name, id) => ({ id, name, min: rng[id][0], max: rng[id][1], def: rng[id][2] }));
+  state.values = rng.map((r) => r[2]); state.cc = names.map(() => -1); state.ready = true; state.scheme = 'preview (no engine)';
+  buildControls();
+  const u = new URLSearchParams(location.search).get('genome');
+  if (u) { try { setGenome(await (await fetch(u)).json()); } catch (e) { document.getElementById('meta').textContent = 'could not load ' + u; } }
+  else document.getElementById('meta').textContent = 'no host: open with ?genome=<url> to preview';
+}
+if (hosted) {
+  let tries = 0; const hello = () => { if (state.ready && model) return; send(T.HELLO); if (++tries < 40) setTimeout(hello, 250); };
+  hello(); setInterval(() => { if (state.ready) send(T.POLL); }, 120);
+} else startDemo();
+</script>
+</body>
+</html>

@@ -325,13 +325,23 @@ export class WclapPlugin {
 		this.outputChannels = ports ? Array.from({ length: h.fn(h.u32(ports))(this.ptr, 0) }, (_, i) => portInfo(false, i)) : [2];
 		this.params = [];
 		this.paramById = new Map();
+		this._scanParams();
+	}
+
+	/** (Re)scan clap.params — needed after activate for plugins whose parameter set is dynamic
+	 *  (e.g. an engine plugin that builds its params from files delivered before activate, SPEC §8). */
+	_scanParams() {
+		const h = this.h;
+		this.params = [];
+		this.paramById = new Map();
 		if (this.paramsExt) {
 			const count = h.fn(h.u32(this.paramsExt))(this.ptr);
 			const info = h.malloc(1320);
 			for (let i = 0; i < count; ++i) {
 				h.fn(h.u32(this.paramsExt + 4))(this.ptr, i, info);
 				const p = {
-					id: h.u32(info), stepped: (h.u32(info + 4) & 1) !== 0, name: h.cString(info + 12), module: h.cString(info + 268),
+					id: h.u32(info), flags: h.u32(info + 4), stepped: (h.u32(info + 4) & 1) !== 0, hidden: (h.u32(info + 4) & 4) !== 0,
+					name: h.cString(info + 12), module: h.cString(info + 268),
 					min: h.f64(info + 1296), max: h.f64(info + 1304), def: h.f64(info + 1312),
 				};
 				this.params.push(p); this.paramById.set(p.id, p);
@@ -347,6 +357,7 @@ export class WclapPlugin {
 		h.virtualRate = sampleRate;
 		if (!this.call(16, sampleRate, 1, blockSize)) throw new Error('activate failed');
 		if (!this.call(24)) throw new Error('start_processing failed');
+		this._scanParams();  // dynamic param sets are only known after activate (SPEC §8 engines)
 		this.active = true;
 		const nIn = this.inputChannels.length, nOut = this.outputChannels.length;
 		this.bufs = {
@@ -433,7 +444,7 @@ export class WclapPlugin {
 	}
 
 	/**
-	 * Render offline. `events` are { frame, type:'noteOn'|'noteOff'|'param', key, velocity, channel, id, value } with
+	 * Render offline. `events` are { frame, type:'noteOn'|'noteOff'|'param'|'midi', key, velocity, channel, id, value, data:[status,d1,d2] } with
 	 * absolute `frame` offsets from the start of this call; unsorted is fine. Returns one Float32Array per output
 	 * channel of the first output port.
 	 *
@@ -457,6 +468,12 @@ export class WclapPlugin {
 				if (ev.type === 'noteOn') this._noteEvent(ptr, EVENT.NOTE_ON, { ...ev, time });
 				else if (ev.type === 'noteOff') this._noteEvent(ptr, EVENT.NOTE_OFF, { ...ev, time });
 				else if (ev.type === 'param') this._paramEvent(ptr, { id: this.param(ev.id).id, value: ev.value, time });
+				else if (ev.type === 'midi') {
+					// clap_event_midi: header (size 24, time, space 0, type 10 = CLAP_EVENT_MIDI, flags), u16 port_index, u8 data[3]
+					h.setU32(ptr, 24); h.setU32(ptr + 4, time); h.setU16(ptr + 8, 0); h.setU16(ptr + 10, 10); h.setU32(ptr + 12, 0);
+					h.setU16(ptr + 16, 0);
+					const bytes = h.bytes(); bytes[ptr + 18] = ev.data[0] & 0xff; bytes[ptr + 19] = ev.data[1] & 0xff; bytes[ptr + 20] = ev.data[2] & 0xff;
+				}
 				else throw new Error(`unknown event type ${ev.type}`);
 				h.inputEvents.push(ptr);
 			}
@@ -554,7 +571,7 @@ export class WclapPlugin {
 		this.portReceive(new Uint8Array([241, 0, 0, 0]));
 		let ok = true;
 		for (const { path, data } of entries) {
-			const p = new TextEncoder().encode(path);
+			const p = textEncoder.encode(path);  // module-level: AudioWorkletGlobalScope has no TextEncoder
 			const frame = new Uint8Array(10 + p.length + data.length); // 4 hdr + 2 pathLen + path + 4 dataLen + data
 			frame[0] = 240; frame[1] = 0; frame[2] = 0; frame[3] = 0;
 			new DataView(frame.buffer).setUint16(4, p.length, true);

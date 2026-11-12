@@ -1,0 +1,30 @@
+{
+  "$schema": "../../schema/rack.schema.json",
+  "format": "wclap-rack",
+  "version": 1,
+  "name": "Synth.is CPPN+DSP sound 01KR0R5T4S7SQF4W8M1G99CGS9 (live CPPN engine, C-major arpeggio) -> WetChorus",
+  "source": {
+    "bundle": "cppn-engine",
+    "plugin": "is.synth.kromosynth.cppn-engine",
+    "kind": "synth",
+    "length": 48000,
+    "files": [
+      { "path": "/genomes/01KR0R5T4S7SQF4W8M1G99CGS9.json", "archive": "files/genome.json" }
+    ],
+    "params": { "1": 4 },
+    "notes": [
+      { "key": 60, "velocity": 0.9, "frame": 0, "frames": 12000 },
+      { "key": 64, "velocity": 0.85, "frame": 12000, "frames": 12000 },
+      { "key": 67, "velocity": 0.85, "frame": 24000, "frames": 12000 },
+      { "key": 72, "velocity": 0.9, "frame": 36000, "frames": 12000 }
+    ]
+  },
+  "devices": [
+    {
+      "bundle": "wet-chorus",
+      "plugin": "studio.opendaw.commons.wet-chorus",
+      "on": true,
+      "params": { "0": 5, "1": 1, "2": 180 }
+    }
+  ]
+}
