@@ -1108,14 +1108,21 @@ inline void mixToTwo(const Plan& plan, const VoiceState& vs, const Node& n, floa
 // The convolver's 'normalize' scale needs the power of the WHOLE response, i.e. the CPPN signal over
 // the whole note at this key. Called at note-on; costs one CPPN evaluation per sample of the note
 // for each convolver, so the engine caches the result per key / length / velocity.
-inline void prepareConvolvers(const Plan& plan, cppn::Cppn& net, VoiceState& vs, const RenderCtx& rc) {
-  for (const auto& n : plan.nodes) {
+// Resumable form, so the pre-rendered playing mode can spread it over audio blocks: `node`, `i` and
+// `sum` carry the position between calls; at most `budget` CPPN evaluations are done (counted in
+// `spent`). Returns true when every convolver has its scale. The sums run in the same order as one
+// uninterrupted pass, so the result is identical.
+inline bool prepareConvolversStep(const Plan& plan, cppn::Cppn& net, VoiceState& vs, const RenderCtx& rc, size_t& node, long& i,
+                                  double& sum, long budget, long& spent) {
+  for (; node < plan.nodes.size(); node++, i = 0, sum = 0) {
+    const Node& n = plan.nodes[node];
     if (n.kind != K_CONV || n.buf.slot < 0) continue;
     const Slot& sl = plan.slots[n.buf.slot];
     const double f = sl.followsKey ? sl.baseFreq * rc.keyRatio : sl.baseFreq;
-    double sum = 0;
     if (sl.noise) sum = (n.buf.half * n.buf.half / 3.0 + n.buf.mid * n.buf.mid) * (double)rc.total;
-    else for (long i = 0; i < rc.total; i++) {
+    else for (; i < rc.total; i++) {
+      if (spent >= budget) return false;
+      spent++;
       net.evaluate(i, rc.total, f, plan.sampleRate, rc.velocity, rc.x, rc.y);
       const float v = (float)(n.buf.half * net.output(sl.cppnOut) + n.buf.mid);
       sum += (double)(v * v);
@@ -1124,6 +1131,11 @@ inline void prepareConvolvers(const Plan& plan, cppn::Cppn& net, VoiceState& vs,
     if (!std::isfinite(power) || power < 0.000125f) power = 0.000125f;
     vs.conv[n.state].scale = 1.f / power * 0.00125f * (44100.f / (float)plan.sampleRate);
   }
+  return true;
+}
+inline void prepareConvolvers(const Plan& plan, cppn::Cppn& net, VoiceState& vs, const RenderCtx& rc) {
+  size_t node = 0; long i = 0, spent = 0; double sum = 0;
+  prepareConvolversStep(plan, net, vs, rc, node, i, sum, 0x7fffffffL, spent);
 }
 
 // one sample of one voice; returns the mono output of the graph
@@ -1465,6 +1477,55 @@ inline double renderSample(const Plan& plan, cppn::Cppn& net, VoiceState& vs, co
     }
   }
   return plan.output >= 0 ? vs.out[(size_t)plan.output * kMaxCh] : 0.0;
+}
+
+
+// Microseconds per sample of one instance of each Faust template, measured on the calibration machine
+// (see poc-cppn-wasm/cost-calibrate.mjs). Unknown templates count as a mid-weight one.
+inline double faustCostWeight(const std::string& tpl) {
+  // measured 2026-11-12, M1 Pro, Node 22 reference host (cost-calibrate-results.json)
+  static const std::pair<const char*, double> kUs[] = {
+      {"church-bell", 0.862}, {"compressor-mono", 0.104}, {"crybaby", 0.040}, {"cubic-nl", 0.037}, {"dattorro", 0.031},
+      {"dattorro-default", 0.050}, {"djembe", 0.130}, {"ef-echo", 0.024}, {"ef-transpose", 0.037}, {"ef-wavefold", 0.023},
+      {"english-bell", 0.885}, {"flanger", 0.063}, {"freeverb", 0.045}, {"french-bell", 0.875}, {"german-bell", 0.893},
+      {"greyhole", 0.242}, {"ja-processor", 0.258}, {"jpverb", 13.423}, {"marimba", 0.372}, {"marimba-bar", 1.139},
+      {"moog-ladder", 0.081}, {"phaser", 0.067}, {"pm-brass", 0.050}, {"pm-clarinet", 0.037}, {"pm-flute", 0.048},
+      {"pm-formant-bp", 0.113}, {"pm-ks", 0.045}, {"pm-violin", 0.065}, {"raw", 0.012}, {"russian-bell", 0.880},
+      {"springreverb", 0.166}, {"standard-bell", 0.931}, {"string-exciter", 0.038}, {"subtractive", 0.054}, {"svf", 0.035},
+      {"tanh-aa", 0.063}, {"vital-rev", 0.513}, {"wavefolder", 0.043}, {"zita-rev", 0.242}};
+  for (const auto& e : kUs) if (tpl == e.first) return e.second;
+  return 0.2;
+}
+
+// ── cost of one voice-sample, for the pre-rendered playing mode ──────────────────────────────────
+// The engine has no usable clock in our hosts (they give a virtual one), so whether a genome is too
+// slow to play live is estimated from the compiled plan. Features, per sample of one voice:
+constexpr int kCostFeatures = 11;
+inline void costFeatures(const Plan& plan, const cppn::Cppn& net, double f[kCostFeatures]) {
+  for (int i = 0; i < kCostFeatures; i++) f[i] = 0;
+  double cppnEval = 0;   // node + connection visits of one CPPN evaluation
+  if (net.flat) for (int node : net.order) cppnEval += 1.0 + (double)net.incoming[node].size();
+  else { cppnEval = net.total; for (auto& in : net.incoming) cppnEval += (double)in.size(); }
+  f[0] = 1;                                         // fixed per-sample overhead
+  f[1] = cppnEval * (double)plan.groups.size();     // CPPN evaluations
+  f[2] = (double)plan.nodes.size();                 // per-node overhead (input mixing over 6 channels)
+  for (const auto& n : plan.nodes) {
+    double edges = (double)n.ins.size();
+    for (const auto& pr : n.p) edges += (double)(pr.sigs.size() + pr.mods.size());
+    for (const auto& pr : n.fp) edges += (double)(pr.sigs.size() + pr.mods.size());
+    f[3] += edges;                                  // connections and parameter signals
+    const bool dyn = n.p[0].dynamic() || n.p[1].dynamic() || n.p[2].dynamic() || n.p[3].dynamic();
+    switch (n.kind) {
+      case K_BIQUAD: f[dyn ? 5 : 4] += 1; break;    // a moving biquad recomputes its coefficients every sample
+      case K_OSC: f[6] += 1; break;
+      case K_WAVETABLE: f[7] += (double)n.waves.size(); break;
+      case K_ADDITIVE: f[7] += (double)n.partials.size(); break;
+      case K_DELAY: case K_FBDELAY: case K_COMP: case K_SHAPER: f[8] += 1; break;
+      case K_CONV: f[9] += 1; break;
+      case K_FAUST: f[10] += faustCostWeight(n.tpl); break;
+      default: break;
+    }
+  }
 }
 
 }  // namespace cgraph

@@ -91,7 +91,7 @@ test('cppn-engine: wclap.files/1 delivery before activate, digest on stdout, gen
   assert.ok(host.stdout.includes(`digest=${want}`), `expected digest ${want} in:\n${host.stdout}`);
   plugin.activate({ sampleRate: 48000, blockSize: 512 });
   assert.match(host.stdout, /cppn-engine: loaded genome=\/genomes\/01KR0R5T4S7SQF4W8M1G99CGS9\.json cppnNodes=21 cppnConns=51 outputs=18 scheme=legacy-2input patchNodes=\d+ patchEdges=\d+ netOuts=13/);
-  assert.equal(plugin.params.length, 15, 'the eleven before, plus Weights X/Y and Frequencies X/Y');
+  assert.equal(plugin.params.length, 16, 'the eleven before, plus Weights X/Y, Frequencies X/Y and Pre-render');
   const byId = new Map(plugin.params.map((p) => [p.id, p]));
   assert.equal(byId.get(1).name, 'Duration');
   assert.equal(byId.get(1).min, 0.05);
@@ -276,8 +276,8 @@ test('cppn-engine: editor page link, description, genome and values over the web
   assert.equal(byType(80).length, 1, 'one description frame');
   const desc = JSON.parse(Buffer.from(byType(80)[0].slice(4)).toString());
   assert.equal(desc.rootKey, 60);
-  assert.equal(desc.params.length, 15);
-  assert.deepEqual(desc.params.slice(11).map((p) => p.name), ['Weights X', 'Weights Y', 'Frequencies X', 'Frequencies Y']);
+  assert.equal(desc.params.length, 16);
+  assert.deepEqual(desc.params.slice(11).map((p) => p.name), ['Weights X', 'Weights Y', 'Frequencies X', 'Frequencies Y', 'Pre-render']);
   assert.equal(byType(81).length, 1, 'the genome is passed to the page');
   assert.equal(byType(81)[0].length - 4, GENOME.length);
   assert.ok(byType(82).length >= 1, 'values frame');
@@ -286,7 +286,7 @@ test('cppn-engine: editor page link, description, genome and values over the web
   plugin.guiReceive(frame(65, 12, (dv, o) => { dv.setUint32(o, 11, true); dv.setFloat64(o + 4, 0.8, true); }));
   plugin.guiReceive(frame(69));
   const vals = new DataView(byType(82).at(-1).buffer, 4);
-  assert.equal(vals.getUint32(12, true), 15);
+  assert.equal(vals.getUint32(12, true), 16);
   assert.ok(Math.abs(vals.getFloat64(16 + 11 * 12, true) - 0.8) < 1e-12, 'Weights X = 0.8 after the page set it');
   plugin.guiCloseWebview();
   plugin.destroy();
@@ -411,4 +411,210 @@ test('cppn-engine: asNEATPatch as an object (not a JSON string) plays the same a
   let maxDiff = 0;
   for (let i = 0; i < a.out.length; i++) maxDiff = Math.max(maxDiff, Math.abs(a.out[i] - b.out[i]));
   assert.equal(maxDiff, 0, 'identical samples');
+});
+
+// ── pre-rendered playing mode (parameter 15: 0 Auto, 1 Live, 2 Pre-rendered; page frame 83) ────────────
+// The heavy case is synthetic: the 440 Hz tone into a Faust jpverb, the slowest template (about 13 µs
+// per sample on the calibration machine), so the cost estimate puts it far below 12x real time.
+const HEAVY_PATCH = sineInto({ templateName: 'jpverb', paramValues: {} });
+
+async function openWithStatus(files, events = []) {
+  const { host, plugin } = await loadEngine();
+  deliver(plugin, files);
+  plugin.activate({ sampleRate: 48000, blockSize: 512 });
+  plugin.guiOpenWebview();
+  let st = null;
+  host.webviewSink = (f) => {
+    if (f[0] !== 83) return;
+    const v = new DataView(f.buffer, f.byteOffset + 4);
+    st = { pre: f[4], reason: f[5], fresh: v.getUint16(2, true), planned: v.getUint16(4, true), stale: v.getUint16(6, true), speed: v.getFloat32(8, true), bytes: v.getUint32(12, true), step: v.getUint16(18, true), sampled: v.getUint16(20, true), live: v.getUint16(22, true), waiting: v.getUint16(24, true), waitSec: v.getFloat32(28, true) };
+  };
+  plugin.render(512, events);
+  const status = () => { plugin.guiReceive(frame(69)); return st; };
+  return { host, plugin, status };
+}
+const heavyFiles = () => ({ '/genomes/synth.json': new Uint8Array(Buffer.from(SYNTH_GENOME)), '/genomes/patch.json': new Uint8Array(Buffer.from(JSON.stringify(HEAVY_PATCH))) });
+
+test('cppn-engine pre-render: Auto keeps a light genome live and pre-renders a heavy one', async () => {
+  const light = await openWithStatus(FILES);
+  let s = light.status();
+  assert.equal(s.pre, 0, 'the example genome plays live');
+  assert.equal(s.reason, 0, 'decided from the estimate (the reference host clock is virtual)');
+  assert.ok(s.speed >= 12, `estimated ${s.speed}x real time`);
+  assert.match(light.host.stdout, /playing mode=live reason=estimated/);
+  light.plugin.destroy();
+  const heavy = await openWithStatus(heavyFiles());
+  s = heavy.status();
+  assert.equal(s.pre, 1, 'a jpverb patch is pre-rendered');
+  assert.ok(s.speed < 12, `estimated ${s.speed}x real time`);
+  assert.equal(s.planned, 73, 'every key from 24 to 96 fits in memory at 2 s');
+  assert.equal(s.step, 3);
+  heavy.plugin.destroy();
+});
+
+test('cppn-engine pre-render: parameter 15 forces Live or Pre-rendered either way', async () => {
+  const heavy = await openWithStatus(heavyFiles(), [{ frame: 0, type: 'param', id: 15, value: 1 }]);
+  let s = heavy.status();
+  assert.deepEqual([s.pre, s.reason], [0, 2], 'Live forced on the heavy genome');
+  heavy.plugin.render(512, [{ frame: 0, type: 'param', id: 15, value: 0 }]);
+  s = heavy.status();
+  assert.deepEqual([s.pre, s.reason], [1, 0], 'back to Auto: pre-rendered again');
+  heavy.plugin.destroy();
+  const light = await openWithStatus(FILES, [{ frame: 0, type: 'param', id: 15, value: 2 }]);
+  s = light.status();
+  assert.deepEqual([s.pre, s.reason], [1, 2], 'Pre-rendered forced on the light genome');
+  const info = light.plugin.params.find((p) => p.id === 15);
+  assert.equal(info.name, 'Pre-render');
+  light.plugin.destroy();
+});
+
+test('cppn-engine pre-render: parameter 15 is kept in the state (version 6); a version 5 state loads as Auto', async () => {
+  const a = await openWithStatus(FILES, [{ frame: 0, type: 'param', id: 15, value: 2 }, { frame: 0, type: 'param', id: 1, value: 1.25 }]);
+  const saved = a.plugin.saveState();
+  assert.equal(saved[0], 6, 'state version 6');
+  a.plugin.destroy();
+  const b = await openWithStatus(FILES);
+  b.plugin.loadState(saved);
+  b.plugin.render(512);
+  const s = b.status();
+  assert.equal(s.pre, 1, 'restored state plays pre-rendered');
+  assert.equal(b.plugin.getParam(15), 2);
+  assert.equal(b.plugin.getParam(1), 1.25, 'and the other parameters');
+  b.plugin.destroy();
+  // the same state written as version 5: 15 values, 15 controller slots, then the genome path
+  const v5 = new Uint8Array(1 + 8 * 15 + 2 * 15 + (saved.length - (1 + 8 * 16 + 2 * 16)));
+  v5[0] = 5;
+  v5.set(saved.subarray(1, 1 + 8 * 15), 1);
+  v5.set(saved.subarray(1 + 8 * 16, 1 + 8 * 16 + 2 * 15), 1 + 8 * 15);
+  v5.set(saved.subarray(1 + 8 * 16 + 2 * 16), 1 + 8 * 15 + 2 * 15);
+  const c = await openWithStatus(FILES, [{ frame: 0, type: 'param', id: 15, value: 1 }]);
+  c.plugin.loadState(v5);   // throws if refused
+  assert.equal(c.plugin.getParam(1), 1.25, 'a version 5 state loads its values');
+  assert.equal(c.plugin.getParam(15), 0);
+  c.plugin.render(512);
+  const sc = c.status();
+  assert.equal(sc.pre, 0, 'Pre-render is Auto after a version 5 state, and the light genome plays live');
+  assert.equal(sc.reason, 0);
+  c.plugin.destroy();
+});
+
+test('cppn-engine pre-render: a rendered key at its own pitch is the live note, sample for sample', async () => {
+  const setup = [{ frame: 0, type: 'param', id: 1, value: 0.5 }];
+  const pre = await openWithStatus(FILES, [...setup, { frame: 0, type: 'param', id: 15, value: 2 }]);
+  // keep processing until the root and the first grid key (63) are rendered
+  for (let i = 0; i < 2000 && pre.status().fresh < 2; i++) pre.plugin.render(512);
+  assert.ok(pre.status().fresh >= 2, 'keys 60 and 63 rendered');
+  const live = await openWithStatus(FILES, [...setup, { frame: 0, type: 'param', id: 15, value: 1 }]);
+  for (const key of [60, 63]) {   // 60 comes from the level measurement, 63 from a key render
+    const ev = [{ frame: 0, type: 'noteOn', key, velocity: 1, channel: 0, noteId: key }];
+    const head = pre.plugin.render(512, ev)[0];
+    const st = pre.status();
+    assert.deepEqual([st.sampled, st.live], [1, 0], `key ${key} is played from its rendered buffer, not live`);
+    const a = new Float32Array(48000);
+    a.set(head);
+    a.set(pre.plugin.render(48000 - 512)[0], 512);
+    const b = live.plugin.render(48000, ev)[0];
+    let diff = 0, p = 0;
+    for (let i = 0; i < a.length; i++) { diff = Math.max(diff, Math.abs(a[i] - b[i])); p = Math.max(p, Math.abs(b[i])); }
+    assert.ok(p > 0.01, `key ${key} sounds`);
+    assert.equal(diff, 0, `key ${key}: largest difference ${diff}`);
+  }
+  // a key not rendered yet, next to a rendered one, is that neighbour resampled: close, not equal
+  const ev = [{ frame: 0, type: 'noteOn', key: 61, velocity: 1, channel: 0, noteId: 61 }];
+  pre.plugin.render(512, ev);
+  assert.deepEqual([pre.status().sampled, pre.status().live], [1, 0], 'key 61 plays key 60 resampled');
+  pre.plugin.destroy();
+  live.plugin.destroy();
+});
+
+test('cppn-engine pre-render: after a Duration change a played key is rendered at once and heard as it renders (not the old length)', async () => {
+  // DC Filter and Auto Level off: the level measurement is redone after the played key, so they would differ
+  const setup = [{ frame: 0, type: 'param', id: 15, value: 2 }, { frame: 0, type: 'param', id: 1, value: 0.5 }, { frame: 0, type: 'param', id: 7, value: 0 }, { frame: 0, type: 'param', id: 8, value: 0 }];
+  const pre = await openWithStatus(heavyFiles(), setup);
+  for (let i = 0; i < 4000 && pre.status().fresh < 1; i++) pre.plugin.render(512);
+  assert.ok(pre.status().fresh >= 1, 'key 60 rendered at 0.5 s');
+  pre.plugin.render(512, [{ frame: 0, type: 'param', id: 1, value: 1.0 }]);
+  assert.equal(pre.status().fresh, 0, 'every key is out of date after the change');
+  const ev = [{ frame: 0, type: 'noteOn', key: 60, velocity: 1, channel: 0, noteId: 1 }];
+  const chunks = [pre.plugin.render(512, ev)[0]];
+  const s0 = pre.status();
+  assert.equal(s0.waiting, 1, 'the note waits for its key');
+  assert.ok(s0.waitSec >= 0, `an estimate of the wait is reported (${s0.waitSec} s)`);
+  let waited = 1;
+  while (pre.status().waiting && waited < 4000) { chunks.push(pre.plugin.render(512)[0]); waited++; }
+  assert.equal(pre.status().waiting, 0, 'the note started');
+  for (let i = 0; i < 150; i++) chunks.push(pre.plugin.render(512)[0]);
+  const a = new Float32Array(chunks.reduce((n, c) => n + c.length, 0));
+  { let o = 0; for (const c of chunks) { a.set(c, o); o += c.length; } }
+  const live = await openWithStatus(heavyFiles(), [...setup.slice(1), { frame: 0, type: 'param', id: 1, value: 1.0 }, { frame: 0, type: 'param', id: 15, value: 1 }]);
+  const b = live.plugin.render(48000 * 1.4, ev)[0];
+  const onset = (x) => x.findIndex((v) => v !== 0);
+  const oa = onset(a), ob = onset(b);
+  assert.ok(oa > 0 && ob >= 0, `both sound (onsets ${oa}, ${ob})`);
+  const rms = (x, o, t0, t1) => { let e = 0; for (let i = o + Math.round(t0 * 48000); i < o + Math.round(t1 * 48000); i++) e += x[i] * x[i]; return Math.sqrt(e / ((t1 - t0) * 48000)); };
+  assert.ok(rms(a, oa, 0.7, 0.95) > 0.01, `still sounding at 0.7-0.95 s: the new 1 s length, not the old 0.5 s (rms ${rms(a, oa, 0.7, 0.95)})`);
+  let diff = 0;
+  for (let i = 0; i < 48000 * 1.15; i++) diff = Math.max(diff, Math.abs(a[oa + i] - b[ob + i]));
+  assert.equal(diff, 0, `the streamed note is the live note, sample for sample (largest difference ${diff}); waited ${waited} blocks`);
+  pre.plugin.destroy();
+  live.plugin.destroy();
+});
+
+test('cppn-engine: Live, a convolver note prepares over several blocks instead of stalling one, and then plays as a prepared one', async () => {
+  const conv = JSON.stringify({
+    audioGraph: { buf: ['bufferSource', ['conv'], {}], conv: ['convolver', ['output'], {}] },
+    networkOutputs: [{ id: 'no0', networkOutput: 0, frequency: 440, audioGraphNodes: { buf: [{ paramName: 'buffer', range: [-1, 1], weight: 1 }], conv: [{ paramName: 'buffer', range: [-1, 1], weight: 1 }] } }],
+  });
+  const files = { '/genomes/synth.json': new Uint8Array(Buffer.from(SYNTH_GENOME)), '/genomes/patch.json': new Uint8Array(Buffer.from(conv)) };
+  const p = await openWithStatus(files, [{ frame: 0, type: 'param', id: 15, value: 1 }, { frame: 0, type: 'param', id: 1, value: 30 }]);
+  const play = (noteId) => {
+    const out = [p.plugin.render(512, [{ frame: 0, type: 'noteOn', key: 60, velocity: 1, channel: 0, noteId }])[0]];
+    const st = p.status();
+    let silent = 0;
+    while (out.at(-1).every((v) => v === 0) && silent < 2000) { silent++; out.push(p.plugin.render(512)[0]); }
+    for (let i = 0; i < 40; i++) out.push(p.plugin.render(512)[0]);
+    const a = new Float32Array(out.length * 512);
+    out.forEach((c, i) => a.set(c, i * 512));
+    return { a, st, silent };
+  };
+  const first = play(1);
+  assert.equal(first.st.waiting, 1, 'the note is waiting after its first block');
+  assert.ok(first.st.waitSec > 0, `with an estimate (${first.st.waitSec} s)`);
+  assert.ok(first.silent >= 2, `prepared over several blocks (${first.silent + 1} silent)`);
+  p.plugin.render(512, [{ frame: 0, type: 'noteOff', key: 60, velocity: 0, channel: 0, noteId: 1 }]);
+  for (let i = 0; i < 20; i++) p.plugin.render(512);   // the release ends it
+  const second = play(2);
+  assert.equal(second.st.waiting, 0, 'the same note again starts at once (its pre-pass is remembered)');
+  const onset = (x) => x.findIndex((v) => v !== 0);
+  const oa = onset(first.a), ob = onset(second.a);
+  let diff = 0, pk = 0;
+  for (let i = 0; i < 48000 * 0.3; i++) { diff = Math.max(diff, Math.abs(first.a[oa + i] - second.a[ob + i])); pk = Math.max(pk, Math.abs(second.a[ob + i])); }
+  assert.ok(pk > 0.001, `it sounds (peak ${pk})`);
+  assert.equal(diff, 0, `the waited note is the prepared note (largest difference ${diff})`);
+  p.plugin.destroy();
+  // clap.render offline (a bounce): the pre-pass is done at note on, so the note starts in its first block
+  const off = await openWithStatus(files, [{ frame: 0, type: 'param', id: 15, value: 1 }, { frame: 0, type: 'param', id: 1, value: 30 }]);
+  const r = off.plugin.ext('clap.render');
+  assert.ok(r, 'clap.render offered');
+  assert.equal(off.plugin.h.fn(off.plugin.h.u32(r + 4))(off.plugin.ptr, 1), 1, 'offline mode accepted');
+  const c = off.plugin.render(48000 * 0.4, [{ frame: 0, type: 'noteOn', key: 60, velocity: 1, channel: 0, noteId: 1 }])[0];
+  const oc = onset(c);
+  assert.ok(oc >= 0 && oc < 512, `offline: sounds from the start (onset ${oc})`);
+  let d2 = 0;
+  for (let i = 0; i < 48000 * 0.3; i++) d2 = Math.max(d2, Math.abs(first.a[oa + i] - c[oc + i]));
+  assert.equal(d2, 0, `offline note = the waited note (largest difference ${d2})`);
+  off.plugin.destroy();
+});
+
+test('cppn-engine pre-render: offline rendering (clap.render) plays a heavy genome live', async () => {
+  const h = await openWithStatus(heavyFiles());
+  assert.equal(h.status().pre, 1, 'pre-rendered in real time');
+  const r = h.plugin.ext('clap.render');
+  h.plugin.h.fn(h.plugin.h.u32(r + 4))(h.plugin.ptr, 1);
+  h.plugin.render(512);
+  assert.equal(h.status().pre, 0, 'live when the host renders offline');
+  h.plugin.h.fn(h.plugin.h.u32(r + 4))(h.plugin.ptr, 0);
+  h.plugin.render(512);
+  assert.equal(h.status().pre, 1, 'pre-rendered again in real time');
+  h.plugin.destroy();
 });

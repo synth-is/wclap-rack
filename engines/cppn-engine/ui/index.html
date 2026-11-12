@@ -42,6 +42,7 @@
   .row { display:grid; grid-template-columns: 74px 1fr 52px auto; align-items:center; gap:6px; margin:3px 0; }
   .row input[type=range] { width:100%; accent-color: var(--pos); }
   .row .val { text-align:right; font-variant-numeric: tabular-nums; color:var(--ink); }
+  .row select { background:transparent; color:var(--ink); border:1px solid var(--line); border-radius:4px; padding:2px 4px; font:inherit; }
   .toggles { display:flex; flex-wrap:wrap; gap:6px 12px; margin-top:6px; }
   .toggles label { display:flex; gap:4px; align-items:center; color:var(--dim); cursor:pointer; }
   #keys { display:flex; height:54px; user-select:none; touch-action:none; position:relative; }
@@ -58,6 +59,9 @@
   .legend { color:var(--dim); font-size:10px; margin-top:4px; }
   .legend b { font-weight:600; } .legend .p { color:var(--pos); } .legend .n { color:var(--neg); } .legend .h { color:var(--hot); }
   .note { color:var(--dim); font-size:10px; }
+  .prep { margin: 6px 0 2px; font-size: 12px; color: #f5b85c; animation: prep-pulse 1.2s ease-in-out infinite; }
+  .prep[hidden] { display: none; }
+  @keyframes prep-pulse { 50% { opacity: 0.55; } }
 </style>
 </head>
 <body>
@@ -82,6 +86,9 @@
       <h2>Level and envelope</h2>
       <div id="sliders"></div>
       <div class="toggles" id="toggles"></div>
+      <div class="row" id="moderow" style="margin-top:8px"><span>Playing</span><select id="mode" data-param="15"><option value="0">Auto</option><option value="1">Live</option><option value="2">Pre-rendered</option></select><span></span></div>
+      <p class="prep" id="prep" hidden></p>
+      <p class="note" id="render" title="Pre-rendered: the engine renders keys in the background and plays them as a sampler, for sounds too heavy to compute live with 8 voices"></p>
     </div>
     <div class="panel">
       <h2><span>Audition</span><span class="note" style="text-transform:none;letter-spacing:0">dot = its own pitch</span></h2>
@@ -107,7 +114,7 @@
 <script>
 "use strict";
 // ── protocol ─────────────────────────────────────────────────────────────────────────────────────
-const T = { HELLO: 64, SET: 65, NOTE: 66, LEARN: 67, CLEAR: 68, POLL: 69, DESC: 80, GENOME: 81, VALUES: 82 };
+const T = { HELLO: 64, SET: 65, NOTE: 66, LEARN: 67, CLEAR: 68, POLL: 69, DESC: 80, GENOME: 81, VALUES: 82, RENDER: 83 };
 const hosted = window.parent !== window;
 function send(type, build, size = 0) {
   const buf = new ArrayBuffer(4 + size), dv = new DataView(buf);
@@ -149,8 +156,31 @@ function handleFrame(dv) {
     document.querySelector('#meter i').style.width = Math.min(100, Math.round(Math.sqrt(Math.min(1, peak)) * 100)) + '%';
     document.getElementById('status').textContent = state.voices ? state.voices + (state.voices === 1 ? ' voice' : ' voices') : '';
     onValues();
+  } else if (type === T.RENDER && dv.byteLength >= 24) {
+    // the playing mode: live, or keys rendered in the background and played as a sampler
+    const o = 4, pre = dv.getUint8(o), reason = dv.getUint8(o + 1), fresh = dv.getUint16(o + 2, true), planned = dv.getUint16(o + 4, true);
+    const stale = dv.getUint16(o + 6, true), speed = dv.getFloat32(o + 8, true), bytes = dv.getUint32(o + 12, true), job = dv.getUint16(o + 16, true), step = dv.getUint16(o + 18, true);
+    const sampled = dv.byteLength >= 28 ? dv.getUint16(o + 20, true) : 0, liveV = dv.byteLength >= 28 ? dv.getUint16(o + 22, true) : 0;
+    const waiting = dv.byteLength >= 36 ? dv.getUint16(o + 24, true) : 0, waitSec = dv.byteLength >= 36 ? dv.getFloat32(o + 28, true) : -1;
+    const why = ['estimated', 'measured', 'set by hand'][reason] ?? '';
+    const sp = speed >= 1e5 ? '' : ` · ${speed < 10 ? speed.toFixed(1) : Math.round(speed)}× real time per voice (${why})`;
+    let text;
+    if (!pre) text = 'Live' + sp;
+    else {
+      const prog = fresh >= planned ? `all ${planned} keys rendered` : `${fresh} of ${planned} keys rendered` + (stale ? ` (${stale} older ones still playing)` : '') + (job !== 0xffff ? `, rendering ${noteName(job)}` : '');
+      text = `Pre-rendered: ${prog}, every ${step === 3 ? 'third' : step + 'th'} key first · ${(bytes / 1048576).toFixed(1)} MB` + sp + (sampled + liveV ? ` · playing ${sampled} from rendered keys, ${liveV} live` : '');
+    }
+    // notes waiting to start: their key being rendered (pre-rendered), or a convolver being prepared (live)
+    const prep = document.getElementById('prep');
+    if (waiting) {
+      const sec = waitSec > 0.05 ? ` · about ${waitSec < 10 ? waitSec.toFixed(1) : Math.round(waitSec)} s` : '';
+      prep.textContent = `Preparing ${waiting === 1 ? 'a note' : waiting + ' notes'}${pre ? ' (rendering its key, heard as it renders)' : ' (the convolver needs the whole note first)'}${sec}`;
+      prep.hidden = false;
+    } else prep.hidden = true;
+    document.getElementById('render').textContent = text;
   }
 }
+const noteName = (k) => ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][k % 12] + (Math.floor(k / 12) - 1);
 
 // ── controls ─────────────────────────────────────────────────────────────────────────────────────
 const dragging = new Set();
@@ -215,6 +245,9 @@ function buildControls() {
     l.querySelector('input').addEventListener('change', (e) => setParam(id, e.target.checked ? 1 : 0));
     tg.append(l);
   }
+  const mode = document.getElementById('mode');
+  if (!mode.dataset.bound) { mode.dataset.bound = '1'; mode.addEventListener('change', () => setParam(15, +mode.value)); }
+  document.getElementById('moderow').style.display = P(15) ? '' : 'none';
   buildKeys();
   onValues();
 }
@@ -236,6 +269,7 @@ function onValues() {
     inp.parentNode.querySelector('.val').textContent = fmtVal(id, state.values[id]);
   });
   document.querySelectorAll('input[type=checkbox][data-param]').forEach((inp) => { inp.checked = (state.values[+inp.dataset.param] ?? 0) >= 0.5; });
+  if (state.values[15] != null) document.getElementById('mode').value = String(Math.round(state.values[15]));
   document.querySelectorAll('button.chip[data-param]').forEach((b) => {
     const id = +b.dataset.param, cc = state.cc[id] ?? -1;
     b.classList.toggle('bound', cc >= 0); b.classList.toggle('arm', state.learn === id);
@@ -448,8 +482,8 @@ const demo = { receive(type, dv) {
   if (type === T.CLEAR) { state.cc[dv.getUint32(4, true)] = -1; onValues(); }
 } };
 async function startDemo() {
-  const names = ['Volume', 'Duration', 'Attack', 'Release', 'CPPN X', 'CPPN Y', 'Pitch', 'DC Filter', 'Auto Level', 'Limiter', 'Soft Clip', 'Weights X', 'Weights Y', 'Frequencies X', 'Frequencies Y'];
-  const rng = [[-60, 12, 0], [0.05, 30, 4], [0, 2, 0.005], [0, 3, 0.1], [0, 1, 0.5], [0, 1, 0.5], [-36, 36, 0], [0, 1, 1], [0, 1, 1], [0, 1, 1], [0, 1, 1], [0, 1, 0.5], [0, 1, 0.5], [0, 1, 0.5], [0, 1, 0.5]];
+  const names = ['Volume', 'Duration', 'Attack', 'Release', 'CPPN X', 'CPPN Y', 'Pitch', 'DC Filter', 'Auto Level', 'Limiter', 'Soft Clip', 'Weights X', 'Weights Y', 'Frequencies X', 'Frequencies Y', 'Pre-render'];
+  const rng = [[-60, 12, 0], [0.05, 30, 4], [0, 2, 0.005], [0, 3, 0.1], [0, 1, 0.5], [0, 1, 0.5], [-36, 36, 0], [0, 1, 1], [0, 1, 1], [0, 1, 1], [0, 1, 1], [0, 1, 0.5], [0, 1, 0.5], [0, 1, 0.5], [0, 1, 0.5], [0, 2, 0]];
   state.params = names.map((name, id) => ({ id, name, min: rng[id][0], max: rng[id][1], def: rng[id][2] }));
   state.values = rng.map((r) => r[2]); state.cc = names.map(() => -1); state.ready = true; state.scheme = 'preview (no engine)';
   buildControls();

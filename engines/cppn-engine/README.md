@@ -35,6 +35,46 @@ virtual-audio-graph patch). This engine evaluates **both** in real time:
   note is rendered once at load to get its mean and peak; the mean is subtracted and the level divided
   by the peak when it exceeds 1.
 
+## Pre-rendered playing mode (for genomes too heavy to compute live)
+
+Some genomes (40-75 patch nodes, convolvers, the bell and marimba Faust templates, jpverb) run at only
+1-4x real time for one voice, so 8 voices cannot be computed live. Parameter 15 **Pre-render**
+(0 Auto, 1 Live, 2 Pre-rendered; Auto by default, kept in the state from version 6):
+
+- **Auto** decides at load from the speed of one voice: below 12x real time the genome is pre-rendered.
+  The speed is estimated from the compiled plan (`cgraph::costFeatures`, weights fitted on 49 genomes and
+  the 39 Faust templates by `WCLAP/poc-cppn-wasm/cost-calibrate.mjs`), because our hosts give the plugin
+  a virtual clock; if the clock does move during the load-time level measurement, the measured speed is
+  used instead.
+- **Pre-rendered:** keys 24-96 are rendered into buffers (48 kHz mono float, the note plus its release),
+  the root first, then every third key outward, then the keys between, within 64 MB (the grid widens to
+  every 4th/6th/12th key for long notes). Rendering runs in slices at the end of each `process()` call,
+  using half of the block's time minus the live voices sounding (no thread is available: the browser's
+  AudioWorklet is one thread, the reference host has no thread pool). A note plays its own key's buffer
+  (equal to the live note sample for sample), else a neighbour a semitone away resampled (cubic
+  Hermite), else the nearest planned key, else a live voice if one fits (at 1.6x real time or more).
+  Otherwise its key is **rendered at once and heard as it renders**: the note waits until the render is
+  far enough ahead that it will never be caught (checked at the start, where a convolver's block
+  boundaries stop, and at the end, with two process blocks plus two convolver blocks of margin), then
+  plays from the buffer while it is still being filled. While a note waits for or plays from that render,
+  the render gets 60% of the block. A 30 s note starts after about 2.5 s on the slowest genomes measured
+  (2 s at 1.65x, 0.2 s for a 2 s note). Keys rendered with older settings are never played. One velocity
+  layer (velocity 1; a note's velocity is then a gain, as live, but the CPPN's velocity input is not
+  followed), one noise seed per key.
+- Moving a pad, Duration, Pitch, CPPN X/Y, Limiter, DC Filter or a longer Release makes every rendered
+  key out of date; re-rendering starts 0.3 s after the last change, or at once for a key that is played.
+  A played key also goes before the new level measurement (redone afterwards; with the DC Filter on, a
+  key rendered before it is redone if the measured offset moved).
+- **Convolvers:** a convolver's level needs one CPPN pass over the whole note before its first sample.
+  Live, that pass runs in slices at the end of the following blocks (60% of the block while nothing else
+  sounds) and the note waits for it, instead of stalling the audio thread (it took 0.76 s at one go for a
+  30 s note). Its block products are done all at once every 512 samples and grow along the note; the
+  render budget counts them (`kConvPairUs`).
+- **Offline (clap.render):** a host rendering offline gets everything live and the convolver pass done at
+  note on, so no note waits.
+- The page shows the mode in a status line (frame 83), and "Preparing a note … about N s" while a note
+  waits (frame 83 bytes 24-31: notes waiting, seconds left as a float).
+
 ## Files (wclap.files/1, SPEC §8 — before activate, type 240/241 frames, FNV-1a digest on stdout)
 
 - `*.json` with an `offspring` (raw Synth.is API envelope `{genome:{waveNetwork:{offspring,...}}}`
@@ -46,11 +86,12 @@ virtual-audio-graph patch). This engine evaluates **both** in real time:
 
 ## Parameters (clap.params)
 
-`0` Volume (dB, -60..12), `1` Duration (s, 0.05..10 — the render length of one note),
+`0` Volume (dB, -60..12), `1` Duration (s, 0.05..30 — the render length of one note),
 `2` Attack (s), `3` Release (s), `6` Pitch (semitones, -36..+36, added to the note like the web app's
 noteDelta), `4`/`5` "CPPN X"/"CPPN Y" (0..1 — hybrid-phase navigation coords, marked
 CLAP_PARAM_IS_HIDDEN unless the genome is hybrid-phase; the web app's geometric weight pads instead
-re-deliver a weight-adjusted genome via `wclap.files/1`). Notes drive pitch (buffer outputs
+re-deliver a weight-adjusted genome via `wclap.files/1`), `11`-`14` Weights X/Y and Frequencies X/Y,
+`15` Pre-render (above). Notes drive pitch (buffer outputs
 transpose) and the CPPN velocity input. 8 voices, deterministic, no allocation in `process()`.
 No editor page.
 

@@ -1,7 +1,7 @@
 {
   "cppn-engine": {
     "path": "cppn-engine.wclap.tar.gz",
-    "sha256": "8d5042c47daf0739add6fd879c8bfadcc3d87c8e9d8272f5753c9052f9a59cc0"
+    "sha256": "7a6e4f1550a76dba0cfe3d83a36226e396a03d898f579bc6fd306e3ddaac4a75"
   },
   "wet-chorus": {
     "path": "wet-chorus.wclap.tar.gz",
