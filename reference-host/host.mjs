@@ -75,9 +75,15 @@ export class WclapHost {
 		return h;
 	}
 
-	async _init(wasmBytes, { randomSeed = 1, clock = 'virtual', log = () => {} } = {}) {
+	/**
+	 * extensions: extra wasm imports, { module: { name: fn } } — e.g. the cdp-engine's
+	 * 'wclap.cdp/1' bridge (see cdp-bridge.mjs). onInstantiated(host) runs after the module
+	 * is live, so a bridge can capture host.exports to call back into the module (cdp_deliver).
+	 */
+	async _init(wasmBytes, { randomSeed = 1, clock = 'virtual', log = () => {}, extensions = {}, onInstantiated = null } = {}) {
 		this.stdout = '';
 		this.log = log;
+		this.extensions = extensions;
 		this.virtualFrames = 0;
 		this.virtualRate = 48000;
 		this.clockMode = clock;
@@ -125,6 +131,7 @@ export class WclapHost {
 			if (imp.kind === 'memory') imports[imp.module][imp.name] = this.memory;
 			else if (imp.kind === 'function') {
 				imports[imp.module][imp.name] = (imp.module === 'wasi_snapshot_preview1' && wasi[imp.name]) ||
+					(extensions[imp.module] && extensions[imp.module][imp.name]) ||
 					(imp.name === 'thread-spawn' ? () => -1 : () => 52); // ENOSYS for everything else
 			}
 		}
@@ -135,6 +142,7 @@ export class WclapHost {
 		this.table = this.exports.__indirect_function_table;
 		this._buildHost();
 		this._entry();
+		if (onInstantiated) await onInstantiated(this);
 	}
 
 	/** Rewind the host-side sources of nondeterminism (WASI random_get stream, virtual clock). Call before createPlugin()
@@ -223,8 +231,10 @@ export class WclapHost {
 			webviewSend: 'IIII',
 		}, {
 			getExtension: (host, idPtr) => this.hostExtensions[this.cString(idPtr)] ?? 0,
-			requestRestart() {}, requestProcess() {}, requestCallback() { this.callbackWanted = true; },
-			paramsRescan() {}, paramsClear() {}, paramsRequestFlush() {}, stateMarkDirty() {},
+			// arrow functions: these are exported through a wasm table and called from the
+			// guest as raw function pointers, where shorthand methods would see this === undefined
+			requestRestart: () => {}, requestProcess: () => {}, requestCallback: () => { this.callbackWanted = true; },
+			paramsRescan: () => {}, paramsClear: () => {}, paramsRequestFlush: () => {}, stateMarkDirty: () => {},
 			inSize: () => this.inputEvents.length,
 			inGet: (list, i) => this.inputEvents[i] ?? 0,
 			outTryPush: (list, ev) => {

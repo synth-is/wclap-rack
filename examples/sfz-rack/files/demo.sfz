@@ -1,0 +1,6 @@
+// demo instrument for the sfz-engine example rack (examples/sfz-rack)
+// one sample, whole key range, pitched from C4 (pitch_keycenter=60)
+<global> volume=-3
+<region> sample=samples/c4.wav lokey=0 hikey=127 pitch_keycenter=60 \
+         ampeg_attack=0.005 ampeg_hold=0 ampeg_decay=0.3 ampeg_sustain=0.6 ampeg_release=0.25 \
+         loop_mode=no_loop pan=0 tune=0

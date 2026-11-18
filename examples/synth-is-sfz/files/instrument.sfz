@@ -1,0 +1,58 @@
+// ============================================
+// Kromosynth Virtual Instrument
+// Generated: 2026-11-10T12:43:53.946Z
+// Sounds: 01KR0R5T4S7SQF4W8M1G99CGS9
+// Range: C3 - C6
+// Velocity Layers: 3
+//
+// MIDI CC Mappings:
+//   CC70 = Attack Time  (up = slower attack)
+//   CC71 = Decay Time   (up = slower decay)
+//   CC72 = Sustain Drop (up = less sustain, more percussive)
+//   CC73 = Release Time (up = longer tail)
+// ============================================
+
+<control>
+default_path=samples/
+
+<global>
+ampeg_attack=0.01
+ampeg_decay=0.1
+ampeg_sustain=80
+ampeg_release=0.3
+
+ampeg_attack_oncc70=4
+ampeg_decay_oncc71=8
+ampeg_sustain_oncc72=-80
+ampeg_release_oncc73=8
+
+// C3 (MIDI 48)
+<group>
+lokey=42
+hikey=48
+pitch_keycenter=48
+
+<region> sample=1G99CGS9_048_v1.wav lovel=1 hivel=42
+<region> sample=1G99CGS9_048_v2.wav lovel=43 hivel=84
+<region> sample=1G99CGS9_048_v3.wav lovel=85 hivel=127
+
+// C4 (MIDI 60)
+<group>
+lokey=60
+hikey=60
+pitch_keycenter=60
+
+<region> sample=1G99CGS9_060_v1.wav lovel=1 hivel=42
+<region> sample=1G99CGS9_060_v2.wav lovel=43 hivel=84
+<region> sample=1G99CGS9_060_v3.wav lovel=85 hivel=127
+
+// C5 (MIDI 72)
+<group>
+lokey=72
+hikey=72
+pitch_keycenter=72
+
+<region> sample=1G99CGS9_072_v1.wav lovel=1 hivel=42
+<region> sample=1G99CGS9_072_v2.wav lovel=43 hivel=84
+<region> sample=1G99CGS9_072_v3.wav lovel=85 hivel=127
+

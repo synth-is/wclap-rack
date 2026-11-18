@@ -1,0 +1,16 @@
+cdp-fx — passthrough placeholder WCLAP module for an offline CDP effect stage.
+
+This module is original code, MIT (see LICENSE); it links nothing of the
+Composer's Desktop Project. The CDP programs it points at are rendered by the
+vendored cdp-wasm 0.7.0 package in ../cdp-engine/third_party/cdp-wasm (MIT AND
+LGPL-2.1-or-later) — see ../cdp-engine/NOTICE. The effect catalog it indexes
+(param 0) is ../cdp-engine/catalog.json, generated from that package.
+
+Why a passthrough: CDP effects are offline (file -> file) programs and cannot run
+in a realtime CLAP process(). In our wclap-rack hosts the effect is applied by
+the page-side wclap.cdp/1 bridge (reference-host/cdp-bridge.mjs, CDPBridge
+fxChain) between the cdp-engine's per-note generator render and the delivery,
+using THIS device's params from the rack document; at extract/QD time the same
+chain runs over full rendered audio (CDPBridge.applyEffectToWav). In any other
+host (DAW, test host without the bridge) this device is a bit-transparent
+stereo passthrough.

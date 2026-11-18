@@ -1,0 +1,20 @@
+{
+  "$schema": "../../schema/rack.schema.json",
+  "format": "wclap-rack",
+  "version": 1,
+  "name": "CDP engine (synth 'wave' sine, A-major arpeggio, key 69 = 440 Hz)",
+  "source": {
+    "bundle": "cdp-engine",
+    "plugin": "is.synth.kromosynth.cdp-engine",
+    "kind": "instrument",
+    "length": 96000,
+    "params": { "1": 0, "2": 0.5, "3": 60, "4": 1, "7": 0.8 },
+    "notes": [
+      { "key": 69, "velocity": 0.9, "frame": 0, "frames": 24000 },
+      { "key": 73, "velocity": 0.85, "frame": 24000, "frames": 24000 },
+      { "key": 76, "velocity": 0.85, "frame": 48000, "frames": 24000 },
+      { "key": 81, "velocity": 0.9, "frame": 72000, "frames": 24000 }
+    ]
+  },
+  "devices": []
+}

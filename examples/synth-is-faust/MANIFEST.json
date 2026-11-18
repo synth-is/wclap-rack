@@ -1,0 +1,10 @@
+{
+  "faust-runner": {
+    "path": "faust-runner.wclap.tar.gz",
+    "sha256": "88de5cc4edc97870a589db48378ec8272a092b1d17eb5372145382b5a132ced5"
+  },
+  "wet-chorus": {
+    "path": "wet-chorus.wclap.tar.gz",
+    "sha256": "7b5f85e94a64b131261072f3953bfae1f0c9b8881d4779dabf25c4b165e34dff"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "../../schema/rack.schema.json",
+  "format": "wclap-rack",
+  "version": 1,
+  "name": "SFZ engine (demo.sfz, C-major arpeggio) -> WetChorus",
+  "source": {
+    "bundle": "sfz-engine",
+    "plugin": "is.synth.kromosynth.sfz-engine",
+    "kind": "sampler",
+    "length": 48000,
+    "files": [
+      { "path": "/instruments/demo.sfz", "archive": "files/demo.sfz" },
+      { "path": "/instruments/samples/c4.wav", "archive": "files/samples/c4.wav" }
+    ],
+    "notes": [
+      { "key": 60, "velocity": 0.9, "frame": 0, "frames": 12000 },
+      { "key": 64, "velocity": 0.85, "frame": 12000, "frames": 12000 },
+      { "key": 67, "velocity": 0.85, "frame": 24000, "frames": 12000 },
+      { "key": 72, "velocity": 0.9, "frame": 36000, "frames": 12000 }
+    ]
+  },
+  "devices": [
+    {
+      "bundle": "wet-chorus",
+      "plugin": "studio.opendaw.commons.wet-chorus",
+      "on": true,
+      "params": { "0": 5, "1": 1, "2": 180 }
+    }
+  ]
+}

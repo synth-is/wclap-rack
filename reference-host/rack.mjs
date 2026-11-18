@@ -97,7 +97,15 @@ const decodeState = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
  *   options   { sampleRate = 48000, blockSize = 512, preRoll = 4096 }
  * Returns { left, right, latency, tail, devices: [{ plugin, on, latency }], fingerprint, hosts }.
  */
-export async function renderRack({ rack, bundles, files = {}, input, sampleRate = 48000, blockSize = 512, preRoll = 4096 }) {
+/**
+ * extensions: per-bundle extra wasm imports + hooks, keyed by MANIFEST bundle key:
+ *   { "cdp-engine": { imports: { 'wclap.cdp/1': {...} }, onInstantiated: (host) => {}, drain?: async () => {} } }
+ * (a plain imports object is also accepted). When the SOURCE bundle has an extension entry,
+ * the source is rendered block-wise with a macrotask yield between blocks so async bridge
+ * deliveries (cdp-engine's rendered notes) can land, and `drain()` is awaited before the
+ * final event flush.
+ */
+export async function renderRack({ rack, bundles, files = {}, input, sampleRate = 48000, blockSize = 512, preRoll = 4096, extensions = {} }) {
 	const errors = validateRackDoc(rack);
 	if (errors.length) throw new Error(`invalid rack: ${errors.join('; ')}`);
 
@@ -107,10 +115,40 @@ export async function renderRack({ rack, bundles, files = {}, input, sampleRate 
 		const bytes = bundles[key];
 		if (!bytes) throw new Error(`rack: bundle "${key}" bytes not provided`);
 		const { wasm } = await loadBundleBytesAsync(bytes);
-		const host = await WclapHost.load(wasm);
+		const ext = extensions[key];
+		const host = await WclapHost.load(wasm, ext && ext.imports
+			? { extensions: ext.imports, onInstantiated: ext.onInstantiated }
+			: ext ? { extensions: ext } : {});
 		host.snapshot();
 		hosts.set(key, host);
 		return host;
+	};
+
+	// Block-wise instrument render with a yield between blocks (async bridge sources).
+	// `drain` (the bridge's) is awaited after EVERY block, so an async delivery always lands
+	// at the same block boundary — the rendered audio stays deterministic even though the
+	// render itself is wall-clock-timed.
+	const renderSourceBlocks = async (plugin, total, events, drain = null) => {
+		const out = [new Float32Array(total), new Float32Array(total)];
+		const sorted = [...events].sort((a, b) => a.frame - b.frame);
+		let done = 0, ei = 0;
+		while (done < total) {
+			const n = Math.min(blockSize, total - done);
+			const last = done + n >= total;
+			const evs = [];
+			// the last block also takes events at/after the end: process() flushes trailing events
+			while (ei < sorted.length && (last || sorted[ei].frame < done + n)) {
+				const e = sorted[ei++];
+				evs.push({ ...e, frame: Math.max(0, e.frame - done) });
+			}
+			const chunk = plugin.render(n, evs);
+			out[0].set(chunk[0] ?? chunk[0], done);
+			out[1].set(chunk[1] ?? chunk[0], done);
+			done += n;
+			await new Promise((r) => setTimeout(r, 0));
+			if (drain) await drain();
+		}
+		return { out, rest: sorted.slice(ei) };
 	};
 
 	let len;
@@ -148,8 +186,16 @@ export async function renderRack({ rack, bundles, files = {}, input, sampleRate 
 					{ frame: preRoll + (n.frame ?? 0) + (n.frames ?? len), type: 'noteOff', key: n.key, velocity: 0, channel: 0, noteId: i + 1 },
 				])).flat(),
 			];
-			const out = plugin.render(preRoll + len, events); // no input: instrument
-			cur = out.length > 1 ? [out[0], out[1]] : [out[0], out[0]];
+			const ext = extensions[s.bundle];
+			if (ext) {
+				// async bridge source (e.g. cdp-engine): block-wise render, then drain pending
+				// renders, then flush events at/after the end
+				const { out } = await renderSourceBlocks(plugin, preRoll + len, events, ext.drain ?? null);
+				cur = out;
+			} else {
+				const out = plugin.render(preRoll + len, events); // no input: instrument
+				cur = out.length > 1 ? [out[0], out[1]] : [out[0], out[0]];
+			}
 			latency += plugin.latency();
 			tail = Math.max(tail, plugin.tail());
 			devices.push({ plugin: s.plugin, on: true, source: true, latency: plugin.latency() });

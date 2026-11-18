@@ -1,0 +1,193 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>CDP Effect (offline stage)</title>
+<style>
+  :root { --bg:#141318; --panel:#1c1a22; --line:#2c2a35; --txt:#e8e6ef; --dim:#8b8896; --pos:#a78bfa; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:10px; background:var(--bg); color:var(--txt); font:12px/1.45 system-ui, sans-serif; }
+  h1 { font-size:13px; margin:0 0 2px; }
+  #meta { color:var(--dim); font-size:10px; margin-bottom:8px; }
+  select, input[type=range] { width:100%; }
+  select { background:#0f0e13; color:var(--txt); border:1px solid var(--line); border-radius:4px; padding:3px 4px; font-size:11px; }
+  .row { display:flex; align-items:center; gap:8px; margin-top:6px; }
+  .row > span:first-child { width:34%; color:var(--dim); font-size:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .row .val { width:52px; text-align:right; font-size:10px; color:var(--dim); font-variant-numeric:tabular-nums; }
+  .note { color:var(--dim); font-size:10px; margin-top:10px; }
+</style>
+</head>
+<body>
+  <h1>CDP Effect (offline stage)</h1>
+  <p id="meta">connecting…</p>
+  <select id="effect"></select>
+  <div id="params"></div>
+  <p class="note">This device is a passthrough in the realtime stream: the chosen CDP effect is applied offline by the host's wclap.cdp/1 bridge to each note rendered by a chained CDP Engine (or over the full render at extract/QD time). Pick the effect and its parameters here — changes are sent to the plugin and reported to the host.</p>
+<script>
+'use strict';
+// ── frame protocol (see src/cdp_fx_clap.cc) ──
+const T_HELLO = 64, T_SET = 65, T_POLL = 69;   // page -> plugin
+const T_DESC = 80, T_VALUES = 82;               // plugin -> page
+const frame = (type, payload) => {
+  const f = new ArrayBuffer(4 + (payload ? payload.length : 0));
+  const u = new Uint8Array(f);
+  u[0] = type;
+  if (payload) u.set(payload, 4);
+  return f;
+};
+const setParam = (id, value) => {
+  const f = new ArrayBuffer(4 + 12);
+  const u = new Uint8Array(f), dv = new DataView(f);
+  u[0] = T_SET;
+  dv.setUint32(4, id, true);
+  dv.setFloat64(8, value, true);
+  send(f);
+};
+const send = (buf) => { if (hosted) window.parent.postMessage(buf, '*'); };
+const hosted = window.parent !== window;
+
+const state = { params: [], values: {}, catalog: null, effect: 0, desc: null };
+const $ = (id) => document.getElementById(id);
+
+window.addEventListener('message', (e) => {
+  const d = e.data;
+  if (!(d instanceof ArrayBuffer) && !ArrayBuffer.isView(d)) return;
+  const u = d instanceof ArrayBuffer ? new Uint8Array(d) : new Uint8Array(d.buffer, d.byteOffset, d.byteLength);
+  const dv = d instanceof ArrayBuffer ? new DataView(d) : new DataView(d.buffer, d.byteOffset, d.byteLength);
+  if (u.length < 4) return;
+  const type = u[0];
+  if (type === T_DESC) {
+    try { state.desc = JSON.parse(new TextDecoder().decode(u.slice(4))); }
+    catch (e) { $('meta').textContent = 'bad description frame: ' + e.message; return; }
+    state.params = state.desc.params || [];
+    buildEffectSelect();
+    buildParamRows();
+    $('meta').textContent = 'connected — ' + (state.catalog ? state.catalog.effects.length + ' effects in the catalog' : '');
+    send(frame(T_POLL));
+  } else if (type === T_VALUES) {
+    const count = dv.getUint32(4, true);
+    for (let i = 0; i < count && 8 + i * 8 + 8 <= d.byteLength; i++) {
+      state.values[i] = dv.getFloat64(8 + i * 8, true);
+    }
+    refreshRows();
+  }
+});
+
+async function loadCatalog() {
+  try {
+    const r = await fetch('catalog.json');
+    if (r.ok) state.catalog = await r.json();
+  } catch { /* standalone preview */ }
+}
+
+function buildEffectSelect() {
+  const sel = $('effect');
+  sel.innerHTML = '';
+  if (!state.catalog) { sel.disabled = true; return; }
+  const byCat = new Map();
+  state.catalog.effects.forEach((f, i) => {
+    const cat = f.category || 'Effects';
+    if (!byCat.has(cat)) byCat.set(cat, []);
+    byCat.get(cat).push([i, f]);
+  });
+  for (const [cat, items] of byCat) {
+    const og = document.createElement('optgroup');
+    og.label = cat;
+    for (const [i, f] of items) {
+      const o = document.createElement('option');
+      o.value = i;
+      o.textContent = f.label + '  (' + f.program + ')';
+      if (f.unsupported) { o.disabled = true; o.textContent += ' — ' + f.unsupported; o.title = f.unsupported; }
+      og.appendChild(o);
+    }
+    sel.appendChild(og);
+  }
+  const cur = state.values[0];
+  sel.value = String(cur !== undefined && cur > -1e9 + 1 ? Math.round(cur) : 0);
+  sel.onchange = () => {
+    state.effect = +sel.value;
+    setParam(0, state.effect);
+    for (let id = 1; id < 13; id++) delete state.values[id]; // reset P rows to the new effect's defaults
+    buildParamRows();
+  };
+}
+
+// ── parameter rows: P1..P12 labelled from the selected effect's catalog entry ──
+function buildParamRows() {
+  const box = $('params');
+  box.innerHTML = '';
+  const f = state.catalog?.effects?.[+state.effect ?? +$('effect').value ?? 0];
+  const rows = (f?.params || []).slice(0, 12).map((p, k) => ({ id: 1 + k, name: p.label || ('P' + (k + 1)), param: p }));
+  for (const r of rows) {
+    const p = state.params.find((x) => x.id === r.id) || {};
+    const div = document.createElement('div');
+    div.className = 'row';
+    const label = document.createElement('span');
+    label.textContent = r.name;
+    const mid = document.createElement('span');
+    mid.style.flex = '1';
+    const val = document.createElement('span');
+    val.className = 'val';
+    if (r.param && r.param.choices) {
+      const sel = document.createElement('select');
+      r.param.choices.forEach(([label2, v]) => {
+        const o = document.createElement('option');
+        o.value = v; o.textContent = label2;
+        sel.appendChild(o);
+      });
+      sel.dataset.param = r.id;
+      const cur = state.values[r.id];
+      sel.value = String(cur !== undefined && cur > -1e9 + 1 ? cur : (r.param.default ?? r.param.choices[0][1]));
+      sel.onchange = () => setParam(r.id, parseFloat(sel.value));
+      mid.appendChild(sel);
+    } else {
+      const inp = document.createElement('input');
+      inp.type = 'range';
+      const min = r.param?.min ?? p.min ?? 0, max = r.param?.max ?? p.max ?? 1, def = r.param?.default ?? p.def ?? 0;
+      inp.min = min; inp.max = max; inp.step = (max - min) / 200 || 0.001;
+      const cur = state.values[r.id];
+      inp.value = cur !== undefined && cur > -1e9 + 1 ? cur : def;
+      inp.dataset.param = r.id;
+      inp.oninput = () => { setParam(r.id, parseFloat(inp.value)); val.textContent = fmt(parseFloat(inp.value)); };
+      mid.appendChild(inp);
+    }
+    div.appendChild(label); div.appendChild(mid); div.appendChild(val);
+    box.appendChild(div);
+  }
+  refreshRows();
+}
+
+function refreshRows() {
+  document.querySelectorAll('#params .row').forEach((row) => {
+    const inp = row.querySelector('input, select');
+    if (!inp) return;
+    const id = +inp.dataset.param;
+    const v = state.values[id];
+    if (v === undefined) return;
+    if (v <= -1e9 + 1) { row.querySelector('.val').textContent = 'default'; return; }
+    if (inp.tagName === 'SELECT') inp.value = String(v);
+    else inp.value = v;
+    row.querySelector('.val').textContent = inp.tagName === 'SELECT'
+      ? inp.options[inp.selectedIndex]?.textContent || ''
+      : fmt(v);
+  });
+}
+
+const fmt = (v) => (Math.abs(v) >= 100 || Number.isInteger(v) ? String(Math.round(v * 100) / 100) : v.toFixed(3));
+
+(async () => {
+  await loadCatalog();
+  if (hosted) {
+    send(frame(T_HELLO));
+    setInterval(() => {
+      if (!state.desc) send(frame(T_HELLO));
+      send(frame(T_POLL));
+    }, 1000);
+  } else {
+    $('meta').textContent = 'standalone preview (not hosted) — ' + (state.catalog ? 'catalog loaded' : 'no catalog.json next to this page');
+    if (state.catalog) { state.params = []; buildEffectSelect(); buildParamRows(); }
+  }
+})();
+</script>
+</body>
+</html>

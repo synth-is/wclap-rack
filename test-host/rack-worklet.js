@@ -40,7 +40,7 @@ class RackProcessor extends AudioWorkletProcessor {
 				const events = Object.entries(s.params ?? {}).map(([k, v]) => ({
 					frame: 0, type: 'param', id: plugin.param(isNaN(Number(k)) ? k : Number(k))?.id ?? k, value: v,
 				}));
-				this.source = { plugin, events, first: true, pending: [], params: plugin.params.map((p) => ({ id: p.id, name: p.name, min: p.min, max: p.max, def: p.def, stepped: p.stepped })) };
+				this.source = { plugin, events, first: true, pending: [], params: plugin.params.map((p) => ({ id: p.id, name: p.name, min: p.min, max: p.max, def: p.def, stepped: p.stepped, hidden: p.hidden })) };
 			}
 			for (const [i, d] of rack.devices.entries()) {
 				if (d.on === false) { this.devices.push({ index: i, on: false }); continue; }
@@ -71,7 +71,7 @@ class RackProcessor extends AudioWorkletProcessor {
 				latency,
 				source: this.source ? { plugin: rack.source.plugin, params: this.source.params } : null,
 				devices: this.devices.map((d) => d.on
-					? { index: d.index, plugin: rack.devices[d.index].plugin, params: d.plugin.params.map((p) => ({ id: p.id, name: p.name, min: p.min, max: p.max, def: p.def, stepped: p.stepped })) }
+					? { index: d.index, plugin: rack.devices[d.index].plugin, params: d.plugin.params.map((p) => ({ id: p.id, name: p.name, min: p.min, max: p.max, def: p.def, stepped: p.stepped, hidden: p.hidden })) }
 					: { index: d.index, bypassed: true, plugin: rack.devices[d.index].plugin }),
 			});
 			this.ready = true;

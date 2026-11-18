@@ -25,13 +25,13 @@ for (let i = 0; i < n; i++) {
 }
 
 try {
-	const { rack, manifest, bundles } = loadRackBundle(bundle);
+	const { rack, manifest, bundles, files } = loadRackBundle(bundle);
 	const { errors } = await validateRackBundle(rack, manifest, bundles);
 	if (errors.length) { for (const e of errors) console.error(`ERROR: ${e}`); process.exit(1); }
 
 	const input = { left, right: left };
-	const r1 = await renderRack({ rack, bundles, input, sampleRate });
-	const r2 = await renderRack({ rack, bundles, input, sampleRate });
+	const r1 = await renderRack({ rack, bundles, files, input, sampleRate });
+	const r2 = await renderRack({ rack, bundles, files, input, sampleRate });
 	const deterministic = r1.fingerprint === r2.fingerprint && fingerprint([r1.left, r1.right]) === fingerprint([r2.left, r2.right]);
 
 	if (args.includes('--json')) {

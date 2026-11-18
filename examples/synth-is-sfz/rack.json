@@ -1,0 +1,38 @@
+{
+  "$schema": "../../schema/rack.schema.json",
+  "format": "wclap-rack",
+  "version": 1,
+  "name": "Synth.is CPPN+DSP sound 01KR0R5T4S7SQF4W8M1G99CGS9 (SFZ, keys C3/C4/C5) -> WetChorus",
+  "source": {
+    "bundle": "sfz-engine",
+    "plugin": "is.synth.kromosynth.sfz-engine",
+    "kind": "sampler",
+    "length": 48000,
+    "files": [
+      { "path": "/instruments/instrument.sfz", "archive": "files/instrument.sfz" },
+      { "path": "/instruments/samples/1G99CGS9_048_v1.wav", "archive": "files/samples/1G99CGS9_048_v1.wav" },
+      { "path": "/instruments/samples/1G99CGS9_048_v2.wav", "archive": "files/samples/1G99CGS9_048_v2.wav" },
+      { "path": "/instruments/samples/1G99CGS9_048_v3.wav", "archive": "files/samples/1G99CGS9_048_v3.wav" },
+      { "path": "/instruments/samples/1G99CGS9_060_v1.wav", "archive": "files/samples/1G99CGS9_060_v1.wav" },
+      { "path": "/instruments/samples/1G99CGS9_060_v2.wav", "archive": "files/samples/1G99CGS9_060_v2.wav" },
+      { "path": "/instruments/samples/1G99CGS9_060_v3.wav", "archive": "files/samples/1G99CGS9_060_v3.wav" },
+      { "path": "/instruments/samples/1G99CGS9_072_v1.wav", "archive": "files/samples/1G99CGS9_072_v1.wav" },
+      { "path": "/instruments/samples/1G99CGS9_072_v2.wav", "archive": "files/samples/1G99CGS9_072_v2.wav" },
+      { "path": "/instruments/samples/1G99CGS9_072_v3.wav", "archive": "files/samples/1G99CGS9_072_v3.wav" }
+    ],
+    "notes": [
+      { "key": 48, "velocity": 0.9, "frame": 0, "frames": 12000 },
+      { "key": 60, "velocity": 1.0, "frame": 12000, "frames": 12000 },
+      { "key": 72, "velocity": 0.7, "frame": 24000, "frames": 12000 },
+      { "key": 60, "velocity": 0.4, "frame": 36000, "frames": 12000 }
+    ]
+  },
+  "devices": [
+    {
+      "bundle": "wet-chorus",
+      "plugin": "studio.opendaw.commons.wet-chorus",
+      "on": true,
+      "params": { "0": 5, "1": 1, "2": 180 }
+    }
+  ]
+}

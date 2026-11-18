@@ -214,3 +214,13 @@ genome rendered to SFZ, a free-form Faust genome, and a ported synth (Aether, â€
 in every host. The engine plugins' own licences ride in their WCLAP bundles as usual (sfizz is
 BSD-2-Clause; Faust-generated DSP code is the instrument author's own), so engine plugins do not tighten
 the licence posture of a public palette.
+
+Reference engines ship in this repo under `engines/` (all MIT): `engines/sfz-engine/`, a small SFZ
+sampler WCLAP that receives its `.sfz` + samples through `wclap.files/1` exactly as specified above
+(`examples/sfz-rack/`, `tests/sfz-engine.test.mjs`), `engines/faust-runner/`, a generic Faust-graph
+runner that receives a genome's wasm + JSON and executes it through an embedded wasm interpreter,
+exposing the genome's widgets as a dynamic `clap.params` set (`examples/faust-rack/`,
+`tests/faust-runner.test.mjs`), and `engines/cppn-engine/`, a real-time CPPN+DSP substrate engine that
+receives a Synth.is genome JSON (waveNetwork CPPN + asNEAT DSP patch) and evaluates both per sample
+inside the plugin â€” the live counterpart of the sample-based SFZ delivery
+(`examples/synth-is-cppn/`, `tests/cppn-engine.test.mjs`).

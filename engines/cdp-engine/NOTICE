@@ -1,0 +1,21 @@
+cdp-engine — a WCLAP instrument wrapping the CDP-WASM-SUITE (https://github.com/cdp-wasm-suite).
+
+The module.wasm built from src/cdp_engine_clap.cc is MIT (see LICENSE) and is written from
+scratch for this repo; it does not link any CDP code. At runtime the host loads the CDP
+program WebAssembly modules (the offline Composer's Desktop Project programs, compiled by
+the cdp-wasm-suite project) through the cdp-wasm JavaScript engine and hands rendered audio
+buffers to this module over the wclap.cdp/1 bridge (see README.md). Those assets are
+vendored UNMODIFIED under third_party/cdp-wasm/ with their own license:
+
+  third_party/cdp-wasm/            cdp-wasm npm package 0.7.0 — (MIT AND LGPL-2.1-or-later)
+    src/  wasm/                    the JS engine (MIT) and the CDP program wasm modules (LGPL-2.1-or-later)
+    LICENSE  package.json
+    upstream: https://github.com/cdp-wasm-suite/cdp-wasm (CDP8 sources: cdp-wasm-suite/CDP8, LGPL-2.1)
+
+The voice interpolation in src/cdp_engine_clap.cc is an original 4-point cubic Hermite
+(Catmull-Rom) implementation; it was informed by, but does not copy, the LGPL-2.1
+cdp-sampler header (cdp-wasm-suite/cdp-sampler), which is deliberately NOT vendored so
+this module stays MIT.
+
+Playback conventions follow cdp-sampler: MIDI note 60 plays a rendered buffer at native
+rate, each semitone a 2^(1/12) step.

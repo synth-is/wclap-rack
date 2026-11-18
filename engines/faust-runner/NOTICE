@@ -1,0 +1,16 @@
+Kromosynth Faust Runner (engines/faust-runner)
+Copyright 2026 Björn Þór Jónsson (kromosynth-burst)
+
+Everything in this directory is our own code, licensed under the MIT License (the text is in LICENSE).
+
+Third party at build time
+  third_party/clap/           CLAP headers (https://github.com/free-audio/clap, commit
+                              a47f6badb49d948fd009998f28309cdab78979c9), MIT licence, third_party/clap/LICENSE.
+  third_party/wasm3/          wasm3 wasm interpreter (https://github.com/wasm3/wasm3, commit
+                              28ecb9af6d2040e474a70f7cb7f43666740141fb), MIT licence, third_party/wasm3/LICENSE.
+                              Used to execute the delivered genome wasm inside this module.
+  The built module.wasm links Emscripten's libc/libc++ runtime (MIT / Apache-2.0 with LLVM exception).
+
+At RUNTIME the module executes the genome wasm delivered via wclap.files/1 (wclap-rack SPEC §8).
+That genome is not part of this bundle; per SPEC §8, Faust-generated DSP code is the instrument
+author's own and its licence rides with the rack bundle's file delivery.

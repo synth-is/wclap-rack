@@ -1,0 +1,10 @@
+{
+  "sfz-engine": {
+    "path": "sfz-engine.wclap.tar.gz",
+    "sha256": "87614a3bb6fc100a4ce21b67e1d4f913c8c9404a39d7d6ffe0bc131dba7fd953"
+  },
+  "wet-chorus": {
+    "path": "wet-chorus.wclap.tar.gz",
+    "sha256": "7b5f85e94a64b131261072f3953bfae1f0c9b8881d4779dabf25c4b165e34dff"
+  }
+}

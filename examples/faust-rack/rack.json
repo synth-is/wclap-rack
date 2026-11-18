@@ -1,0 +1,31 @@
+{
+  "$schema": "../../schema/rack.schema.json",
+  "format": "wclap-rack",
+  "version": 1,
+  "name": "Faust runner (demo genome, C-major arpeggio) -> WetChorus",
+  "source": {
+    "bundle": "faust-runner",
+    "plugin": "is.synth.kromosynth.faust-runner",
+    "kind": "synth",
+    "length": 48000,
+    "files": [
+      { "path": "/genome/genome.json", "archive": "files/genome.json" },
+      { "path": "/genome/genome.wasm", "archive": "files/genome.wasm" }
+    ],
+    "params": { "1": 12000, "2": 2.5 },
+    "notes": [
+      { "key": 60, "velocity": 0.9, "frame": 0, "frames": 12000 },
+      { "key": 64, "velocity": 0.85, "frame": 12000, "frames": 12000 },
+      { "key": 67, "velocity": 0.85, "frame": 24000, "frames": 12000 },
+      { "key": 72, "velocity": 0.9, "frame": 36000, "frames": 12000 }
+    ]
+  },
+  "devices": [
+    {
+      "bundle": "wet-chorus",
+      "plugin": "studio.opendaw.commons.wet-chorus",
+      "on": true,
+      "params": { "0": 5, "1": 1, "2": 180 }
+    }
+  ]
+}

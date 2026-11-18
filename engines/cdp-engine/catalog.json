@@ -1,0 +1,8232 @@
+{
+ "format": "wclap-cdp-catalog",
+ "version": 1,
+ "source": "cdp-wasm@0.7.0",
+ "generators": [
+  {
+   "id": "wave",
+   "label": "Waveform",
+   "category": "Synthesis",
+   "program": "synth",
+   "mode": [
+    "wave"
+   ],
+   "params": [
+    {
+     "name": "shape",
+     "label": "Waveform",
+     "choices": [
+      [
+       "Sine",
+       "1"
+      ],
+      [
+       "Square",
+       "2"
+      ],
+      [
+       "Triangle",
+       "3"
+      ],
+      [
+       "Sawtooth",
+       "4"
+      ]
+     ]
+    },
+    {
+     "name": "freq",
+     "label": "Freq (Hz)",
+     "min": 20,
+     "max": 8000,
+     "default": 330,
+     "step": 1,
+     "env": true
+    },
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 0.1,
+     "max": 20,
+     "default": 1.5,
+     "step": 0.1
+    },
+    {
+     "name": "amp",
+     "label": "Amplitude",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.8,
+     "step": 0.05,
+     "env": true
+    }
+   ]
+  },
+  {
+   "id": "noise",
+   "label": "White noise",
+   "category": "Synthesis",
+   "program": "synth",
+   "mode": [
+    "noise"
+   ],
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 0.1,
+     "max": 20,
+     "default": 1.5,
+     "step": 0.1
+    },
+    {
+     "name": "amp",
+     "label": "Amplitude",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05,
+     "env": true
+    }
+   ]
+  },
+  {
+   "id": "silence",
+   "label": "Silence",
+   "category": "Synthesis",
+   "program": "synth",
+   "mode": [
+    "silence"
+   ],
+   "params": [
+    {
+     "name": "chans",
+     "label": "Channels",
+     "choices": [
+      [
+       "Mono",
+       "1"
+      ],
+      [
+       "Stereo",
+       "2"
+      ],
+      [
+       "Quad",
+       "4"
+      ]
+     ]
+    },
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 0.1,
+     "max": 60,
+     "default": 1,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "spectra",
+   "label": "Spectral band",
+   "category": "Synthesis",
+   "program": "synth",
+   "mode": [
+    "spectra"
+   ],
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 0.1,
+     "max": 20,
+     "default": 3,
+     "step": 0.1
+    },
+    {
+     "name": "frq",
+     "label": "Centre freq (Hz)",
+     "min": 50,
+     "max": 8000,
+     "default": 440,
+     "step": 1
+    },
+    {
+     "name": "spread",
+     "label": "Bandwidth (Hz)",
+     "min": 1,
+     "max": 4000,
+     "default": 300,
+     "step": 1
+    },
+    {
+     "name": "maxfoc",
+     "label": "Max focus",
+     "min": 0,
+     "max": 1,
+     "default": 0.8,
+     "step": 0.05
+    },
+    {
+     "name": "minfoc",
+     "label": "Min focus",
+     "min": 0,
+     "max": 1,
+     "default": 0.2,
+     "step": 0.05
+    },
+    {
+     "name": "timevar",
+     "label": "Time variation",
+     "min": 0,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "chord",
+   "label": "Chord",
+   "category": "Synthesis",
+   "program": "synth",
+   "mode": [
+    "chord"
+   ],
+   "params": [
+    {
+     "name": "kind",
+     "label": "Note data",
+     "choices": [
+      [
+       "MIDI notes",
+       "1"
+      ],
+      [
+       "Frequencies",
+       "2"
+      ]
+     ]
+    },
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 0.1,
+     "max": 20,
+     "default": 2,
+     "step": 0.1
+    },
+    {
+     "name": "amp",
+     "label": "Amplitude",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.6,
+     "step": 0.05
+    }
+   ],
+   "data": {
+    "label": "Notes (one per line)",
+    "placeholder": "MIDI notes, e.g. 60 / 64 / 67",
+    "default": "60\n64\n67\n71"
+   }
+  },
+  {
+   "id": "clicks",
+   "label": "Click track",
+   "category": "Synthesis",
+   "program": "clicknew",
+   "mode": [
+    "clicks"
+   ],
+   "params": [],
+   "data": {
+    "label": "Click times in seconds (one per line)",
+    "placeholder": "e.g. 0 / 0.5 / 1.0 / 1.5",
+    "default": "0\n0.5\n1.0\n1.5\n2.0"
+   }
+  },
+  {
+   "id": "impulse",
+   "label": "Impulse train",
+   "category": "Synthesis",
+   "program": "impulse",
+   "mode": [
+    "impulse"
+   ],
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 0.1,
+     "max": 20,
+     "default": 2,
+     "step": 0.1
+    },
+    {
+     "name": "pitch",
+     "label": "Pitch (MIDI)",
+     "min": 24,
+     "max": 96,
+     "default": 48,
+     "step": 1,
+     "env": true
+    },
+    {
+     "name": "chirp",
+     "label": "Chirp",
+     "min": 0,
+     "max": 30,
+     "default": 0,
+     "step": 1,
+     "env": true
+    },
+    {
+     "name": "slope",
+     "label": "Slope",
+     "min": 1,
+     "max": 20,
+     "default": 5,
+     "step": 1,
+     "env": true
+    },
+    {
+     "name": "pkcnt",
+     "label": "Peaks",
+     "min": 1,
+     "max": 32,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "level",
+     "label": "Level",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.8,
+     "step": 0.05,
+     "env": true
+    }
+   ]
+  },
+  {
+   "id": "multiosc",
+   "label": "Nested oscillator",
+   "category": "Synthesis",
+   "program": "multiosc",
+   "mode": [
+    "multiosc"
+   ],
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 0.1,
+     "max": 20,
+     "default": 2,
+     "step": 0.1
+    },
+    {
+     "name": "frq1",
+     "label": "Frequency 1",
+     "min": 20,
+     "max": 4000,
+     "default": 220,
+     "step": 1,
+     "env": true
+    },
+    {
+     "name": "frq2",
+     "label": "Sub-osc rate",
+     "min": 0.1,
+     "max": 200,
+     "default": 5,
+     "step": 0.1,
+     "env": true
+    },
+    {
+     "name": "amp2",
+     "label": "Sub-osc depth",
+     "min": 0,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "splice",
+     "label": "Splice (ms)",
+     "min": 1,
+     "max": 50,
+     "default": 5,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "synspline",
+   "label": "Spline synth",
+   "category": "Synthesis",
+   "program": "synspline",
+   "mode": [
+    "synspline"
+   ],
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 0.1,
+     "max": 20,
+     "default": 2,
+     "step": 0.1
+    },
+    {
+     "name": "frq",
+     "label": "Frequency",
+     "min": 20,
+     "max": 4000,
+     "default": 220,
+     "step": 1,
+     "env": true
+    },
+    {
+     "name": "splinecnt",
+     "label": "Spline points",
+     "min": 0,
+     "max": 64,
+     "default": 8,
+     "step": 1,
+     "env": true
+    },
+    {
+     "name": "interp",
+     "label": "Morph wavecycles",
+     "min": 0,
+     "max": 200,
+     "default": 2,
+     "step": 1,
+     "env": true
+    },
+    {
+     "name": "seed",
+     "label": "Seed",
+     "min": 1,
+     "max": 64,
+     "default": 1,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "chirikov",
+   "label": "Chaotic (Chirikov)",
+   "category": "Synthesis",
+   "program": "chirikov",
+   "mode": [
+    "chirikov"
+   ],
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 0.1,
+     "max": 20,
+     "default": 2,
+     "step": 0.1
+    },
+    {
+     "name": "frq",
+     "label": "Frequency",
+     "min": 20,
+     "max": 4000,
+     "default": 220,
+     "step": 1,
+     "env": true
+    },
+    {
+     "name": "damping",
+     "label": "Damping",
+     "min": 0,
+     "max": 1,
+     "default": 0,
+     "step": 0.05,
+     "env": true
+    },
+    {
+     "name": "splice",
+     "label": "Splice (ms)",
+     "min": 1,
+     "max": 50,
+     "default": 5,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "addsynth",
+   "label": "Additive synth",
+   "category": "Synthesis",
+   "program": "newsynth",
+   "mode": [
+    "synthesis",
+    "1"
+   ],
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 0.1,
+     "max": 20,
+     "default": 2,
+     "step": 0.1
+    },
+    {
+     "name": "frq",
+     "label": "Frequency",
+     "min": 1,
+     "max": 4000,
+     "default": 220,
+     "step": 1,
+     "env": true
+    }
+   ],
+   "data": {
+    "label": "Spectrum: \"time pno level pno level ...\" (1st partial must be 1)",
+    "placeholder": "e.g. 0 1 1 2 0.5 3 0.3",
+    "default": "0 1 1 2 0.5 3 0.333 4 0.25 5 0.2 6 0.167 7 0.143 8 0.125 9 0.111 10 0.1 11 0.091 12 0.083 13 0.077 14 0.071 15 0.067 16 0.063"
+   }
+  },
+  {
+   "id": "addsynth_packets",
+   "label": "Wave-packet synth",
+   "category": "Synthesis",
+   "program": "newsynth",
+   "mode": [
+    "synthesis",
+    "2"
+   ],
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 0.1,
+     "max": 20,
+     "default": 2,
+     "step": 0.1
+    },
+    {
+     "name": "frq",
+     "label": "Frequency",
+     "min": 1,
+     "max": 4000,
+     "default": 220,
+     "step": 1,
+     "env": true
+    },
+    {
+     "name": "narrowing",
+     "label": "Packet narrowing",
+     "min": 0,
+     "max": 1000,
+     "default": 1,
+     "step": 0.5
+    },
+    {
+     "name": "centring",
+     "label": "Peak centring",
+     "min": -1,
+     "max": 1,
+     "default": 0,
+     "step": 0.1
+    }
+   ],
+   "data": {
+    "label": "Spectrum: \"time pno level pno level ...\" (1st partial must be 1)",
+    "placeholder": "e.g. 0 1 1 2 0.5 3 0.3",
+    "default": "0 1 1 2 0.5 3 0.333 4 0.25 5 0.2 6 0.167 7 0.143 8 0.125 9 0.111 10 0.1 11 0.091 12 0.083 13 0.077 14 0.071 15 0.067 16 0.063"
+   }
+  },
+  {
+   "id": "fractal",
+   "label": "Fractal synth",
+   "category": "Synthesis",
+   "program": "newsynth",
+   "mode": [
+    "synthesis",
+    "4"
+   ],
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 0.1,
+     "max": 20,
+     "default": 2,
+     "step": 0.1
+    },
+    {
+     "name": "frq",
+     "label": "Frequency",
+     "min": 1,
+     "max": 4000,
+     "default": 220,
+     "step": 1,
+     "env": true
+    },
+    {
+     "name": "atk",
+     "label": "Spike attack (samps)",
+     "min": 1,
+     "max": 16,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "ea",
+     "label": "Attack curve",
+     "min": 0.3,
+     "max": 4,
+     "default": 1,
+     "step": 0.1
+    },
+    {
+     "name": "dec",
+     "label": "Spike decay (samps)",
+     "min": 1,
+     "max": 64,
+     "default": 20,
+     "step": 1
+    },
+    {
+     "name": "ed",
+     "label": "Decay curve",
+     "min": 0.3,
+     "max": 4,
+     "default": 1,
+     "step": 0.1
+    },
+    {
+     "name": "atoh",
+     "label": "On/off ratio",
+     "min": 0.1,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05,
+     "env": true
+    },
+    {
+     "name": "gtow",
+     "label": "Group/wave ratio",
+     "min": 0.1,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05,
+     "env": true
+    }
+   ]
+  },
+  {
+   "id": "duffing",
+   "label": "Duffing oscillator",
+   "category": "Synthesis",
+   "program": "newsynth",
+   "mode": [
+    "synthesis",
+    "5"
+   ],
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 0.1,
+     "max": 20,
+     "default": 2,
+     "step": 0.1
+    },
+    {
+     "name": "frq",
+     "label": "Forcing freq (Hz)",
+     "min": 1,
+     "max": 200,
+     "default": 80,
+     "step": 1,
+     "env": true
+    },
+    {
+     "name": "damping",
+     "label": "Damping",
+     "min": 0.15,
+     "max": 2,
+     "default": 0.5,
+     "step": 0.05,
+     "env": true
+    },
+    {
+     "name": "k",
+     "label": "k coefficient",
+     "min": -10,
+     "max": 10,
+     "default": 1,
+     "step": 0.1
+    },
+    {
+     "name": "b",
+     "label": "b coefficient",
+     "min": 20,
+     "max": 50,
+     "default": 30,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "multisynth",
+   "label": "Multisynth (score)",
+   "category": "Synthesis",
+   "program": "multisynth",
+   "mode": [
+    "synth"
+   ],
+   "params": [
+    {
+     "name": "mm",
+     "label": "Tempo (MM)",
+     "min": 30,
+     "max": 300,
+     "default": 120,
+     "step": 1
+    },
+    {
+     "name": "jitter",
+     "label": "Timing jitter (ms)",
+     "min": 0,
+     "max": 20,
+     "default": 15,
+     "step": 1
+    }
+   ],
+   "data": {
+    "label": "Score: \"Insname time pitch loud dur ...\" (times/durs in thirds-of-semiquavers; dur = multiple of 3 or 4)",
+    "placeholder": "flute 0 60 0.8 24 24 64 0.8 24",
+    "default": "flute 0 60 0.8 24 24 64 0.8 24 48 67 0.8 24"
+   }
+  },
+  {
+   "id": "strands",
+   "label": "Strands (pitch spiral)",
+   "category": "Synthesis",
+   "program": "strands",
+   "mode": [
+    "strands",
+    "2"
+   ],
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 0.5,
+     "max": 20,
+     "default": 4,
+     "step": 0.5
+    },
+    {
+     "name": "bands",
+     "label": "Bands",
+     "min": 1,
+     "max": 4,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "threads",
+     "label": "Threads/band",
+     "min": 2,
+     "max": 8,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "tstep",
+     "label": "Time step (ms)",
+     "min": 1,
+     "max": 200,
+     "default": 20,
+     "step": 1
+    },
+    {
+     "name": "bot",
+     "label": "Lowest pitch (MIDI)",
+     "min": 12,
+     "max": 60,
+     "default": 36,
+     "step": 1
+    },
+    {
+     "name": "top",
+     "label": "Highest pitch (MIDI)",
+     "min": 60,
+     "max": 108,
+     "default": 96,
+     "step": 1
+    },
+    {
+     "name": "twist",
+     "label": "Twist rate (Hz)",
+     "min": 0,
+     "max": 4,
+     "default": 0.5,
+     "step": 0.1
+    },
+    {
+     "name": "turb",
+     "label": "Turbulence",
+     "min": 0,
+     "max": 2,
+     "default": 0.1,
+     "step": 0.05
+    },
+    {
+     "name": "seed",
+     "label": "Seed",
+     "min": 1,
+     "max": 99,
+     "default": 1,
+     "step": 1
+    }
+   ]
+  }
+ ],
+ "effects": [
+  {
+   "id": "abfpan.bformat",
+   "label": "B-format pan",
+   "category": "Spatialisation",
+   "program": "abfpan",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "startpos",
+     "label": "Start pos",
+     "min": 0,
+     "max": 1,
+     "default": 0,
+     "step": 0.05
+    },
+    {
+     "name": "endpos",
+     "label": "End pos",
+     "min": -1,
+     "max": 1,
+     "default": 1,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "blur.blur",
+   "label": "Spectral blur",
+   "category": "Spectral",
+   "program": "blur",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "windows",
+     "label": "Windows",
+     "min": 1,
+     "max": 100,
+     "default": 10,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "blur.avrg",
+   "label": "Spectral average",
+   "category": "Spectral",
+   "program": "blur",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "neighbours",
+     "label": "Neighbours",
+     "min": 2,
+     "max": 50,
+     "default": 4,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "blur.suppress",
+   "label": "Suppress partials",
+   "category": "Spectral",
+   "program": "blur",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "partials",
+     "label": "Suppress N loudest",
+     "min": 1,
+     "max": 30,
+     "default": 3,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "blur.chorus",
+   "label": "Spectral chorus",
+   "category": "Spectral",
+   "program": "blur",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "aspread",
+     "label": "Amp scatter",
+     "min": 1,
+     "max": 1028,
+     "default": 200,
+     "step": 1
+    },
+    {
+     "name": "fspread",
+     "label": "Freq scatter",
+     "min": 1,
+     "max": 4,
+     "default": 2,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "blur.drunk",
+   "label": "Drunk walk",
+   "category": "Spectral",
+   "program": "blur",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "range",
+     "label": "Step range",
+     "min": 1,
+     "max": 50,
+     "default": 5,
+     "step": 1
+    },
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 0.5,
+     "max": 8,
+     "default": 2,
+     "step": 0.5
+    }
+   ]
+  },
+  {
+   "id": "blur.shuffle",
+   "label": "Shuffle windows",
+   "category": "Spectral",
+   "program": "blur",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "grpsize",
+     "label": "Group size",
+     "min": 1,
+     "max": 20,
+     "default": 1,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "blur.noise",
+   "label": "Spectral noise",
+   "category": "Spectral",
+   "program": "blur",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "noise",
+     "label": "Noise",
+     "min": 0,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "blur.scatter",
+   "label": "Spectral scatter",
+   "category": "Spectral",
+   "program": "blur",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "keep",
+     "label": "Blocks kept",
+     "min": 1,
+     "max": 32,
+     "default": 4,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "blur.spread",
+   "label": "Spread peaks",
+   "category": "Spectral",
+   "program": "blur",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "spread",
+     "label": "Spread",
+     "min": 0,
+     "max": 1,
+     "default": 1,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "blur.weave",
+   "label": "Weave windows",
+   "category": "Spectral",
+   "program": "blur",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "fwd",
+     "label": "Forward step",
+     "min": 2,
+     "max": 20,
+     "default": 3,
+     "step": 1
+    },
+    {
+     "name": "back",
+     "label": "Back step",
+     "min": 0,
+     "max": 19,
+     "default": 2,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "bounce.bounce",
+   "label": "Bounce",
+   "category": "Extend & segment",
+   "program": "bounce",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "count",
+     "label": "Bounces",
+     "min": 2,
+     "max": 30,
+     "default": 6,
+     "step": 1
+    },
+    {
+     "name": "startgap",
+     "label": "First gap (s)",
+     "min": 0.04,
+     "max": 3,
+     "default": 0.5,
+     "step": 0.01
+    },
+    {
+     "name": "shorten",
+     "label": "Gap shrink",
+     "min": 0.4,
+     "max": 1,
+     "default": 0.8,
+     "step": 0.05
+    },
+    {
+     "name": "endlevel",
+     "label": "Last level",
+     "min": 0,
+     "max": 1,
+     "default": 0.1,
+     "step": 0.05
+    },
+    {
+     "name": "ewarp",
+     "label": "Decay warp",
+     "min": 0.5,
+     "max": 3,
+     "default": 1,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "brownian.motion",
+   "label": "Brownian texture",
+   "category": "Texture",
+   "program": "brownian",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "chans",
+     "label": "Out channels",
+     "min": 2,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 1,
+     "max": 20,
+     "default": 6,
+     "step": 0.5
+    },
+    {
+     "name": "plo",
+     "label": "Min pitch (MIDI)",
+     "min": 24,
+     "max": 48,
+     "default": 48,
+     "step": 1
+    },
+    {
+     "name": "phi",
+     "label": "Max pitch (MIDI)",
+     "min": 72,
+     "max": 96,
+     "default": 72,
+     "step": 1
+    },
+    {
+     "name": "step",
+     "label": "Pitch step",
+     "min": 0.5,
+     "max": 12,
+     "default": 2,
+     "step": 0.5
+    },
+    {
+     "name": "sstep",
+     "label": "Space step",
+     "min": 0,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "tick",
+     "label": "Event gap (s)",
+     "min": 0.02,
+     "max": 1,
+     "default": 0.15,
+     "step": 0.01
+    }
+   ]
+  },
+  {
+   "id": "cantor.holes",
+   "label": "Cantor holes (proportional)",
+   "category": "Extend & segment",
+   "program": "cantor",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "holesize",
+     "label": "Hole size (%)",
+     "min": 5,
+     "max": 90,
+     "default": 40,
+     "step": 1
+    },
+    {
+     "name": "depth",
+     "label": "Hole depth",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.7,
+     "step": 0.05
+    },
+    {
+     "name": "trigger",
+     "label": "Trigger depth",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "splice",
+     "label": "Splice (ms)",
+     "min": 3,
+     "max": 50,
+     "default": 15,
+     "step": 1
+    },
+    {
+     "name": "maxdur",
+     "label": "Max total (s)",
+     "min": 2,
+     "max": 60,
+     "default": 30,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "cantor.holesfixed",
+   "label": "Cantor holes (fixed)",
+   "category": "Extend & segment",
+   "program": "cantor",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "holedur",
+     "label": "Hole length (s)",
+     "min": 0.02,
+     "max": 1,
+     "default": 0.2,
+     "step": 0.02
+    },
+    {
+     "name": "depth",
+     "label": "Hole depth",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.7,
+     "step": 0.05
+    },
+    {
+     "name": "trigger",
+     "label": "Trigger depth",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "splice",
+     "label": "Splice (ms)",
+     "min": 3,
+     "max": 50,
+     "default": 15,
+     "step": 1
+    },
+    {
+     "name": "maxdur",
+     "label": "Max total (s)",
+     "min": 2,
+     "max": 60,
+     "default": 30,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "cantor.vibrato",
+   "label": "Cantor vibrato layers",
+   "category": "Extend & segment",
+   "program": "cantor",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "holelev",
+     "label": "Hole floor",
+     "min": 0,
+     "max": 0.9,
+     "default": 0.1,
+     "step": 0.05
+    },
+    {
+     "name": "repeats",
+     "label": "Repeats to full",
+     "min": 2,
+     "max": 10,
+     "default": 3,
+     "step": 1
+    },
+    {
+     "name": "layers",
+     "label": "Vibrato layers",
+     "min": 1,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "layerdec",
+     "label": "Layer decay",
+     "min": 0.1,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "maxdur",
+     "label": "Max total (s)",
+     "min": 2,
+     "max": 60,
+     "default": 30,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "cascade.cascade",
+   "label": "Cascade echoes",
+   "category": "Extend & segment",
+   "program": "cascade",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "clipsize",
+     "label": "Clip (s)",
+     "min": 0.02,
+     "max": 1,
+     "default": 0.25,
+     "step": 0.01
+    },
+    {
+     "name": "echos",
+     "label": "Echoes",
+     "min": 1,
+     "max": 64,
+     "default": 8,
+     "step": 1
+    },
+    {
+     "name": "clipmax",
+     "label": "Clip max (s)",
+     "min": 0,
+     "max": 2,
+     "default": 0,
+     "step": 0.05
+    },
+    {
+     "name": "rand",
+     "label": "Randomise",
+     "min": 0,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "ceracu.cycles",
+   "label": "Resync cycles",
+   "category": "Spatialisation",
+   "program": "ceracu",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "cycle1",
+     "label": "Repeats A",
+     "min": 1,
+     "max": 7,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "cycle2",
+     "label": "Repeats B",
+     "min": 2,
+     "max": 8,
+     "default": 3,
+     "step": 1
+    },
+    {
+     "name": "mincycdur",
+     "label": "Fast cycle (s)",
+     "min": 0,
+     "max": 2,
+     "default": 0,
+     "step": 0.1
+    },
+    {
+     "name": "chans",
+     "label": "Out channels",
+     "min": 1,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "outdur",
+     "label": "Duration (s)",
+     "min": 0,
+     "max": 12,
+     "default": 0,
+     "step": 0.5
+    },
+    {
+     "name": "echo",
+     "label": "Echo (s)",
+     "min": 0,
+     "max": 1,
+     "default": 0,
+     "step": 0.05
+    },
+    {
+     "name": "echshift",
+     "label": "Echo shift",
+     "min": -4,
+     "max": 4,
+     "default": 1,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "clip.clip",
+   "label": "Clip",
+   "category": "Filter & dynamics",
+   "program": "clip",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "level",
+     "label": "Clip level",
+     "min": 0.01,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.01
+    }
+   ]
+  },
+  {
+   "id": "clip.half",
+   "label": "Clip half-waves",
+   "category": "Filter & dynamics",
+   "program": "clip",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "fraction",
+     "label": "Fraction",
+     "min": 0.01,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.01
+    }
+   ]
+  },
+  {
+   "id": "combine.mean",
+   "label": "Spectral mean",
+   "category": "Combine",
+   "program": "combine",
+   "domain": "spectral",
+   "params": []
+  },
+  {
+   "id": "combine.cross",
+   "label": "Spectral cross",
+   "category": "Combine",
+   "program": "combine",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "interp",
+     "label": "Amount",
+     "min": 0,
+     "max": 1,
+     "default": 1,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "combine.sum",
+   "label": "Spectral sum",
+   "category": "Combine",
+   "program": "combine",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "crossover",
+     "label": "Mix in 2nd",
+     "min": 0,
+     "max": 1,
+     "default": 1,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "combine.diff",
+   "label": "Spectral difference",
+   "category": "Combine",
+   "program": "combine",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "crossover",
+     "label": "Subtract 2nd",
+     "min": 0,
+     "max": 1,
+     "default": 1,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "combine.interleave",
+   "label": "Spectral interleave",
+   "category": "Combine",
+   "program": "combine",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "leafsize",
+     "label": "Leaf (windows)",
+     "min": 1,
+     "max": 64,
+     "default": 4,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "combine.max",
+   "label": "Spectral maximum",
+   "category": "Combine",
+   "program": "combine",
+   "domain": "spectral",
+   "params": []
+  },
+  {
+   "id": "constrict.constrict",
+   "label": "Tighten silences",
+   "category": "Extend & segment",
+   "program": "constrict",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "constriction",
+     "label": "Tighten by (%)",
+     "min": 0,
+     "max": 200,
+     "default": 100,
+     "step": 5
+    }
+   ]
+  },
+  {
+   "id": "crumble.crumble",
+   "label": "Crumble to 8 channels",
+   "category": "Spatialisation",
+   "program": "crumble",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "start",
+     "label": "Start (s)",
+     "min": 0,
+     "max": 5,
+     "default": 0.1,
+     "step": 0.1
+    },
+    {
+     "name": "dur1",
+     "label": "Split-to-2 (s)",
+     "min": 0.2,
+     "max": 8,
+     "default": 0.35,
+     "step": 0.05
+    },
+    {
+     "name": "dur2",
+     "label": "Split-to-4 (s)",
+     "min": 0.2,
+     "max": 8,
+     "default": 0.35,
+     "step": 0.05
+    },
+    {
+     "name": "segsize",
+     "label": "Segment size (s)",
+     "min": 0.02,
+     "max": 1,
+     "default": 0.1,
+     "step": 0.02
+    },
+    {
+     "name": "segrand",
+     "label": "Size randomness",
+     "min": 0,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "pitchvar",
+     "label": "Pitch variation (±st)",
+     "min": 0,
+     "max": 12,
+     "default": 2,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "crumble.crumble16",
+   "label": "Crumble to 16 channels",
+   "category": "Spatialisation",
+   "program": "crumble",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "start",
+     "label": "Start (s)",
+     "min": 0,
+     "max": 5,
+     "default": 0.05,
+     "step": 0.05
+    },
+    {
+     "name": "dur1",
+     "label": "Split-to-2 (s)",
+     "min": 0.2,
+     "max": 8,
+     "default": 0.2,
+     "step": 0.05
+    },
+    {
+     "name": "dur2",
+     "label": "Split-to-4 (s)",
+     "min": 0.2,
+     "max": 8,
+     "default": 0.2,
+     "step": 0.05
+    },
+    {
+     "name": "dur3",
+     "label": "Split-to-8 (s)",
+     "min": 0.2,
+     "max": 8,
+     "default": 0.2,
+     "step": 0.05
+    },
+    {
+     "name": "segsize",
+     "label": "Segment size (s)",
+     "min": 0.02,
+     "max": 1,
+     "default": 0.1,
+     "step": 0.02
+    },
+    {
+     "name": "segrand",
+     "label": "Size randomness",
+     "min": 0,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "pitchvar",
+     "label": "Pitch variation (±st)",
+     "min": 0,
+     "max": 12,
+     "default": 2,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "crystal.rotate",
+   "label": "Crystal (rotating vertices)",
+   "category": "Texture",
+   "program": "crystal",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 1,
+     "max": 20,
+     "default": 6,
+     "step": 0.5
+    },
+    {
+     "name": "verts",
+     "label": "Vertices",
+     "min": 3,
+     "max": 8,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "radius",
+     "label": "Crystal size",
+     "min": 0.2,
+     "max": 0.9,
+     "default": 0.7,
+     "step": 0.05
+    },
+    {
+     "name": "seed",
+     "label": "Layout seed",
+     "min": 1,
+     "max": 99,
+     "default": 1,
+     "step": 1
+    },
+    {
+     "name": "rota",
+     "label": "Spin xy (rev/s)",
+     "min": -10,
+     "max": 10,
+     "default": 0.4,
+     "step": 0.1
+    },
+    {
+     "name": "rotb",
+     "label": "Spin xz (rev/s)",
+     "min": -10,
+     "max": 10,
+     "default": 0.25,
+     "step": 0.05
+    },
+    {
+     "name": "twidth",
+     "label": "Group width (s)",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "tstep",
+     "label": "Group step (s)",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "plo",
+     "label": "Min pitch (MIDI)",
+     "min": 24,
+     "max": 48,
+     "default": 48,
+     "step": 1
+    },
+    {
+     "name": "phi",
+     "label": "Max pitch (MIDI)",
+     "min": 72,
+     "max": 96,
+     "default": 72,
+     "step": 1
+    },
+    {
+     "name": "attack",
+     "label": "Event attack (s)",
+     "min": 0.005,
+     "max": 0.5,
+     "default": 0.03,
+     "step": 0.005
+    },
+    {
+     "name": "decay",
+     "label": "Event decay (s)",
+     "min": 0.05,
+     "max": 2,
+     "default": 0.35,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "distcut.envelope",
+   "label": "Cut to enveloped grains",
+   "category": "Extend & segment",
+   "program": "distcut",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "cyclecnt",
+     "label": "Wavesets per grain",
+     "min": 1,
+     "max": 64,
+     "default": 8,
+     "step": 1
+    },
+    {
+     "name": "decay",
+     "label": "Decay shape",
+     "min": 0.2,
+     "max": 4,
+     "default": 1,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "distmark.interp",
+   "label": "Waveset interpolate (marks)",
+   "category": "Waveset distortion",
+   "program": "distmark",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "marks",
+     "label": "Marks",
+     "min": 2,
+     "max": 6,
+     "default": 3,
+     "step": 1
+    },
+    {
+     "name": "spacing",
+     "label": "Every (s)",
+     "min": 0.1,
+     "max": 0.5,
+     "default": 0.25,
+     "step": 0.05
+    },
+    {
+     "name": "unitlen",
+     "label": "Unit (ms)",
+     "min": 5,
+     "max": 45,
+     "default": 20,
+     "step": 1
+    },
+    {
+     "name": "stretch",
+     "label": "Time stretch",
+     "min": 1,
+     "max": 4,
+     "default": 1,
+     "step": 0.25
+    },
+    {
+     "name": "rand",
+     "label": "Randomise",
+     "min": 0,
+     "max": 1,
+     "default": 0,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "distmore.double",
+   "label": "Waveset octave-up",
+   "category": "Waveset distortion",
+   "program": "distmore",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "mult",
+     "label": "Octaves up",
+     "min": 1,
+     "max": 4,
+     "default": 1,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "distmore.segszig",
+   "label": "Segment zigzag",
+   "category": "Extend & segment",
+   "program": "distmore",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "repets",
+     "label": "Zigzags",
+     "min": 1,
+     "max": 8,
+     "default": 3,
+     "step": 1
+    },
+    {
+     "name": "shrinkto",
+     "label": "Shrink to (ms)",
+     "min": 31,
+     "max": 500,
+     "default": 250,
+     "step": 1
+    },
+    {
+     "name": "prop",
+     "label": "Portion",
+     "min": 0.2,
+     "max": 1,
+     "default": 1,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "distort.multiply",
+   "label": "Waveset multiply",
+   "category": "Waveset distortion",
+   "program": "distort",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "factor",
+     "label": "Factor",
+     "min": 2,
+     "max": 16,
+     "default": 8,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "distort.average",
+   "label": "Waveset average",
+   "category": "Waveset distortion",
+   "program": "distort",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "cycles",
+     "label": "Cycles",
+     "min": 2,
+     "max": 30,
+     "default": 4,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "distort.reverse",
+   "label": "Waveset reverse",
+   "category": "Waveset distortion",
+   "program": "distort",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "cyclecnt",
+     "label": "Group size",
+     "min": 1,
+     "max": 50,
+     "default": 8,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "distort.interpolate",
+   "label": "Waveset interpolate",
+   "category": "Waveset distortion",
+   "program": "distort",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "cycles",
+     "label": "Interp cycles",
+     "min": 2,
+     "max": 20,
+     "default": 4,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "distort.telescope",
+   "label": "Waveset telescope",
+   "category": "Waveset distortion",
+   "program": "distort",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "cycles",
+     "label": "Cycles",
+     "min": 2,
+     "max": 30,
+     "default": 4,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "distort.divide",
+   "label": "Waveset divide",
+   "category": "Waveset distortion",
+   "program": "distort",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "div",
+     "label": "Divisor",
+     "min": 2,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "distort.delete",
+   "label": "Waveset delete",
+   "category": "Waveset distortion",
+   "program": "distort",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "cyclecnt",
+     "label": "Keep 1 in",
+     "min": 2,
+     "max": 32,
+     "default": 4,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "distort.replace",
+   "label": "Waveset replace",
+   "category": "Waveset distortion",
+   "program": "distort",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "cyclecnt",
+     "label": "Group size",
+     "min": 2,
+     "max": 32,
+     "default": 4,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "distort.cyclefilter",
+   "label": "Waveset band-filter",
+   "category": "Waveset distortion",
+   "program": "distort",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "freqlo",
+     "label": "Low (Hz)",
+     "min": 20,
+     "max": 4000,
+     "default": 200,
+     "step": 10
+    },
+    {
+     "name": "freqhi",
+     "label": "High (Hz)",
+     "min": 50,
+     "max": 12000,
+     "default": 2000,
+     "step": 10
+    }
+   ]
+  },
+  {
+   "id": "distort.pitch",
+   "label": "Waveset pitchwarp",
+   "category": "Waveset distortion",
+   "program": "distort",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "octvary",
+     "label": "Range (octaves)",
+     "min": 0.05,
+     "max": 3,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "cyclelen",
+     "label": "Hold (cycles)",
+     "min": 2,
+     "max": 50,
+     "default": 4,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "distort.omit",
+   "label": "Waveset omit",
+   "category": "Waveset distortion",
+   "program": "distort",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "a",
+     "label": "Omit",
+     "min": 1,
+     "max": 7,
+     "default": 1,
+     "step": 1
+    },
+    {
+     "name": "b",
+     "label": "out of",
+     "min": 2,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "distort.repeat",
+   "label": "Waveset repeat",
+   "category": "Waveset distortion",
+   "program": "distort",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "multiplier",
+     "label": "Repeats",
+     "min": 2,
+     "max": 16,
+     "default": 3,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "distort.overload",
+   "label": "Waveset overload",
+   "category": "Waveset distortion",
+   "program": "distort",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "level",
+     "label": "Clip level",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "depth",
+     "label": "Depth",
+     "min": 0,
+     "max": 1,
+     "default": 0.7,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "distort.reform",
+   "label": "Waveset reform",
+   "category": "Waveset distortion",
+   "program": "distort",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "exag",
+     "label": "Exaggeration",
+     "min": 0.1,
+     "max": 8,
+     "default": 2,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "distort.fractal",
+   "label": "Waveset fractal",
+   "category": "Waveset distortion",
+   "program": "distort",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "scaling",
+     "label": "Scaling",
+     "min": 2,
+     "max": 64,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "loudness",
+     "label": "Copy level",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "distort.envel",
+   "label": "Waveset envelope",
+   "category": "Waveset distortion",
+   "program": "distort",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "cyclecnt",
+     "label": "Group size",
+     "min": 1,
+     "max": 50,
+     "default": 8,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "distort.harmonic",
+   "label": "Harmonic distortion",
+   "category": "Waveset distortion",
+   "program": "distort",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "h2",
+     "label": "2nd harmonic",
+     "min": 0,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "h3",
+     "label": "3rd harmonic",
+     "min": 0,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "h4",
+     "label": "4th harmonic",
+     "min": 0,
+     "max": 1,
+     "default": 0.15,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "distort.elongate",
+   "label": "Waveset elongate",
+   "category": "Waveset distortion",
+   "program": "distort",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "multiplier",
+     "label": "Repeats",
+     "min": 2,
+     "max": 16,
+     "default": 3,
+     "step": 1
+    },
+    {
+     "name": "cyclecnt",
+     "label": "Cycles per group",
+     "min": 1,
+     "max": 8,
+     "default": 1,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "distortt.repeat",
+   "label": "Waveset group-repeat",
+   "category": "Waveset distortion",
+   "program": "distortt",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "gpcnt",
+     "label": "Group size",
+     "min": 1,
+     "max": 16,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "rpt",
+     "label": "Repeats",
+     "min": 2,
+     "max": 16,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "offset",
+     "label": "Offset (ms)",
+     "min": 1,
+     "max": 500,
+     "default": 10,
+     "step": 1
+    },
+    {
+     "name": "dur",
+     "label": "Output (s)",
+     "min": 1,
+     "max": 8,
+     "default": 3,
+     "step": 0.5
+    }
+   ]
+  },
+  {
+   "id": "distrep.stretch",
+   "label": "Wavecycle repeat-stretch",
+   "category": "Waveset distortion",
+   "program": "distrep",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "multiplier",
+     "label": "Repeats",
+     "min": 2,
+     "max": 8,
+     "default": 3,
+     "step": 1
+    },
+    {
+     "name": "cyclecnt",
+     "label": "Group size",
+     "min": 1,
+     "max": 8,
+     "default": 1,
+     "step": 1
+    },
+    {
+     "name": "splicelen",
+     "label": "Splice (ms)",
+     "min": 2,
+     "max": 25,
+     "default": 15,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "distshift.1",
+   "label": "Half-cycle shift",
+   "category": "Waveset distortion",
+   "program": "distshift",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "grpcnt",
+     "label": "Group size",
+     "min": 1,
+     "max": 20,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "shift",
+     "label": "Shift",
+     "min": 1,
+     "max": 10,
+     "default": 2,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "distshift.swap",
+   "label": "Half-cycle swap",
+   "category": "Waveset distortion",
+   "program": "distshift",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "grpcnt",
+     "label": "Group size",
+     "min": 1,
+     "max": 20,
+     "default": 4,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "dvdwind.dvdwind",
+   "label": "Fast wind",
+   "category": "Extend & segment",
+   "program": "dvdwind",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "contraction",
+     "label": "Contract ×",
+     "min": 1.1,
+     "max": 16,
+     "default": 2,
+     "step": 0.1
+    },
+    {
+     "name": "clipsize",
+     "label": "Clip (ms)",
+     "min": 10,
+     "max": 500,
+     "default": 20,
+     "step": 5
+    }
+   ]
+  },
+  {
+   "id": "envcut.envelope",
+   "label": "Cut to enveloped slices",
+   "category": "Extend & segment",
+   "program": "envcut",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "slicelen",
+     "label": "Slice length (s)",
+     "min": 0.02,
+     "max": 2,
+     "default": 0.2,
+     "step": 0.02
+    },
+    {
+     "name": "attack",
+     "label": "Attack (ms)",
+     "min": 0.5,
+     "max": 50,
+     "default": 5,
+     "step": 0.5
+    },
+    {
+     "name": "decay",
+     "label": "Decay shape",
+     "min": 0.2,
+     "max": 4,
+     "default": 1,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "envel.tremolo",
+   "label": "Tremolo (envelope)",
+   "category": "Envelope",
+   "program": "envel",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "frq",
+     "label": "Rate (Hz)",
+     "min": 0.1,
+     "max": 30,
+     "default": 5,
+     "step": 0.1
+    },
+    {
+     "name": "depth",
+     "label": "Depth",
+     "min": 0,
+     "max": 1,
+     "default": 0.8,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "envel.swell",
+   "label": "Swell",
+   "category": "Envelope",
+   "program": "envel",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "peaktime",
+     "label": "Peak time (s)",
+     "min": 0.05,
+     "max": 3,
+     "default": 0.4,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "envel.attack",
+   "label": "Emphasise attack",
+   "category": "Envelope",
+   "program": "envel",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "gain",
+     "label": "Gain",
+     "min": 1,
+     "max": 8,
+     "default": 2,
+     "step": 0.5
+    },
+    {
+     "name": "onset",
+     "label": "Onset (ms)",
+     "min": 5,
+     "max": 1000,
+     "default": 50,
+     "step": 5
+    },
+    {
+     "name": "decay",
+     "label": "Decay (ms)",
+     "min": 5,
+     "max": 2000,
+     "default": 200,
+     "step": 5
+    }
+   ]
+  },
+  {
+   "id": "envel.dovetail",
+   "label": "Fade in/out (dovetail)",
+   "category": "Envelope",
+   "program": "envel",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "infade",
+     "label": "Fade-in (s)",
+     "min": 0,
+     "max": 2,
+     "default": 0.1,
+     "step": 0.05
+    },
+    {
+     "name": "outfade",
+     "label": "Fade-out (s)",
+     "min": 0,
+     "max": 2,
+     "default": 0.2,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "envel.curtail",
+   "label": "Fade to silence",
+   "category": "Envelope",
+   "program": "envel",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "start",
+     "label": "Fade start (s)",
+     "min": 0,
+     "max": 5,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "dur",
+     "label": "Fade length (s)",
+     "min": 0.05,
+     "max": 3,
+     "default": 0.3,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "envel.scaled",
+   "label": "Amplitude ramp",
+   "category": "Envelope",
+   "program": "envel",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "start",
+     "label": "Start level",
+     "min": 0,
+     "max": 1,
+     "default": 0.2,
+     "step": 0.05
+    },
+    {
+     "name": "end",
+     "label": "End level",
+     "min": 0,
+     "max": 1,
+     "default": 1,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "envnu.expdecay",
+   "label": "Exponential decay",
+   "category": "Envelope",
+   "program": "envnu",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "starttime",
+     "label": "Start (s)",
+     "min": 0,
+     "max": 2,
+     "default": 0.2,
+     "step": 0.05
+    },
+    {
+     "name": "endtime",
+     "label": "End (s)",
+     "min": 0.5,
+     "max": 10,
+     "default": 10,
+     "step": 0.5
+    }
+   ]
+  },
+  {
+   "id": "envnu.peakchop",
+   "label": "Peak chop",
+   "category": "Envelope",
+   "program": "envnu",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "wsize",
+     "label": "Window (ms)",
+     "min": 10,
+     "max": 64,
+     "default": 50,
+     "step": 1
+    },
+    {
+     "name": "pkwidth",
+     "label": "Peak width (ms)",
+     "min": 5,
+     "max": 100,
+     "default": 20,
+     "step": 1
+    },
+    {
+     "name": "risetime",
+     "label": "Rise (ms)",
+     "min": 1,
+     "max": 50,
+     "default": 10,
+     "step": 1
+    },
+    {
+     "name": "tempo",
+     "label": "Tempo (per min)",
+     "min": 60,
+     "max": 600,
+     "default": 120,
+     "step": 5
+    },
+    {
+     "name": "gain",
+     "label": "Gain",
+     "min": 0.1,
+     "max": 1,
+     "default": 1,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "envspeak.repeat",
+   "label": "Repeat syllables",
+   "category": "Extend & segment",
+   "program": "envspeak",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "wsize",
+     "label": "Window (ms)",
+     "min": 10,
+     "max": 200,
+     "default": 50,
+     "step": 5
+    },
+    {
+     "name": "splice",
+     "label": "Splice (ms)",
+     "min": 2,
+     "max": 50,
+     "default": 15,
+     "step": 1
+    },
+    {
+     "name": "offset",
+     "label": "Skip syllables",
+     "min": 0,
+     "max": 8,
+     "default": 0,
+     "step": 1
+    },
+    {
+     "name": "repet",
+     "label": "Repeats",
+     "min": 2,
+     "max": 8,
+     "default": 3,
+     "step": 1
+    },
+    {
+     "name": "rand",
+     "label": "Randomise",
+     "min": 0,
+     "max": 1,
+     "default": 0,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "envspeak.shuffle",
+   "label": "Shuffle syllables",
+   "category": "Extend & segment",
+   "program": "envspeak",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "wsize",
+     "label": "Window (ms)",
+     "min": 10,
+     "max": 200,
+     "default": 50,
+     "step": 5
+    },
+    {
+     "name": "splice",
+     "label": "Splice (ms)",
+     "min": 2,
+     "max": 50,
+     "default": 15,
+     "step": 1
+    },
+    {
+     "name": "seed",
+     "label": "Seed",
+     "min": 1,
+     "max": 8,
+     "default": 1,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "extend.loop",
+   "label": "Loop segment",
+   "category": "Extend & segment",
+   "program": "extend",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "cnt",
+     "label": "Repeats",
+     "min": 1,
+     "max": 32,
+     "default": 6,
+     "step": 1
+    },
+    {
+     "name": "len",
+     "label": "Loop length (ms)",
+     "min": 40,
+     "max": 1000,
+     "default": 200,
+     "step": 10
+    }
+   ]
+  },
+  {
+   "id": "extend.iterate",
+   "label": "Iterate (fluid)",
+   "category": "Extend & segment",
+   "program": "extend",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "reps",
+     "label": "Repetitions",
+     "min": 1,
+     "max": 32,
+     "default": 6,
+     "step": 1
+    },
+    {
+     "name": "pshift",
+     "label": "Pitch scatter",
+     "min": 0,
+     "max": 12,
+     "default": 2,
+     "step": 0.5
+    },
+    {
+     "name": "rand",
+     "label": "Time scatter",
+     "min": 0,
+     "max": 1,
+     "default": 0.2,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "extend.doublets",
+   "label": "Doublets",
+   "category": "Extend & segment",
+   "program": "extend",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "segdur",
+     "label": "Segment (s)",
+     "min": 0.02,
+     "max": 1,
+     "default": 0.15,
+     "step": 0.01
+    },
+    {
+     "name": "repets",
+     "label": "Repeats",
+     "min": 2,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "extend.zigzag",
+   "label": "Zigzag",
+   "category": "Extend & segment",
+   "program": "extend",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "end",
+     "label": "Window end (s)",
+     "min": 0.15,
+     "max": 2,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "dur",
+     "label": "Output (s)",
+     "min": 0.5,
+     "max": 8,
+     "default": 2,
+     "step": 0.5
+    },
+    {
+     "name": "minzig",
+     "label": "Min zig (s)",
+     "min": 0.04,
+     "max": 0.45,
+     "default": 0.1,
+     "step": 0.01
+    }
+   ]
+  },
+  {
+   "id": "extend.freeze",
+   "label": "Freeze / sustain",
+   "category": "Extend & segment",
+   "program": "extend",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "outdur",
+     "label": "Output (s)",
+     "min": 0.5,
+     "max": 20,
+     "default": 4,
+     "step": 0.5
+    },
+    {
+     "name": "start",
+     "label": "Freeze from (s)",
+     "min": 0,
+     "max": 60,
+     "default": 0,
+     "step": 0.05
+    },
+    {
+     "name": "end",
+     "label": "Freeze to (s)",
+     "min": 0.05,
+     "max": 60,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "delay",
+     "label": "Iter delay (s)",
+     "min": 0.01,
+     "max": 1,
+     "default": 0.1,
+     "step": 0.01
+    },
+    {
+     "name": "rand",
+     "label": "Delay scatter",
+     "min": 0,
+     "max": 1,
+     "default": 0.2,
+     "step": 0.05
+    },
+    {
+     "name": "pshift",
+     "label": "Pitch scatter",
+     "min": 0,
+     "max": 12,
+     "default": 1,
+     "step": 0.5
+    },
+    {
+     "name": "ampcut",
+     "label": "Amp scatter",
+     "min": 0,
+     "max": 1,
+     "default": 0.2,
+     "step": 0.05
+    },
+    {
+     "name": "gain",
+     "label": "Gain",
+     "min": 0.25,
+     "max": 4,
+     "default": 1,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "extend.drunk",
+   "label": "Drunk walk",
+   "category": "Extend & segment",
+   "program": "extend",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "outdur",
+     "label": "Output (s)",
+     "min": 0.5,
+     "max": 20,
+     "default": 4,
+     "step": 0.5
+    },
+    {
+     "name": "locus",
+     "label": "Centre (s)",
+     "min": 0,
+     "max": 60,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "ambitus",
+     "label": "Wander (s)",
+     "min": 0.02,
+     "max": 10,
+     "default": 0.4,
+     "step": 0.02
+    },
+    {
+     "name": "step",
+     "label": "Step (s)",
+     "min": 0.01,
+     "max": 2,
+     "default": 0.1,
+     "step": 0.01
+    },
+    {
+     "name": "clock",
+     "label": "Segment (s)",
+     "min": 0.04,
+     "max": 1,
+     "default": 0.1,
+     "step": 0.01
+    }
+   ]
+  },
+  {
+   "id": "extend.baktobak",
+   "label": "Back-to-back",
+   "category": "Extend & segment",
+   "program": "extend",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "join",
+     "label": "Join at (s)",
+     "min": 0.01,
+     "max": 60,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "splice",
+     "label": "Splice (ms)",
+     "min": 1,
+     "max": 200,
+     "default": 15,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "extend.repetitions",
+   "label": "Repeat at times",
+   "category": "Extend & segment",
+   "program": "extend",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "count",
+     "label": "Repeats",
+     "min": 2,
+     "max": 16,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "gap",
+     "label": "Spacing (s)",
+     "min": 0.1,
+     "max": 3,
+     "default": 1.2,
+     "step": 0.1
+    },
+    {
+     "name": "level",
+     "label": "Level",
+     "min": 0,
+     "max": 1,
+     "default": 0.8,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "fastconv.reverb",
+   "label": "Convolution reverb",
+   "category": "Delay & reverb",
+   "program": "fastconv",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "dry",
+     "label": "Dry/wet",
+     "min": 0,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "filter.lohi",
+   "label": "Low-pass filter",
+   "category": "Filter & dynamics",
+   "program": "filter",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "passband",
+     "label": "Pass band (Hz)",
+     "min": 100,
+     "max": 8000,
+     "default": 1500,
+     "step": 50
+    },
+    {
+     "name": "stopband",
+     "label": "Stop band (Hz)",
+     "min": 200,
+     "max": 16000,
+     "default": 3000,
+     "step": 50
+    }
+   ]
+  },
+  {
+   "id": "filter.fixed",
+   "label": "Boost/cut band",
+   "category": "Filter & dynamics",
+   "program": "filter",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "bwidth",
+     "label": "Bandwidth (Hz)",
+     "min": 50,
+     "max": 4000,
+     "default": 500,
+     "step": 50
+    },
+    {
+     "name": "boost",
+     "label": "Boost/cut (dB)",
+     "min": -24,
+     "max": 24,
+     "default": 6,
+     "step": 1
+    },
+    {
+     "name": "freq",
+     "label": "Centre (Hz)",
+     "min": 100,
+     "max": 8000,
+     "default": 1000,
+     "step": 50
+    }
+   ]
+  },
+  {
+   "id": "filter.sweeping",
+   "label": "Sweeping band-pass",
+   "category": "Filter & dynamics",
+   "program": "filter",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "acuity",
+     "label": "Acuity",
+     "min": 0.001,
+     "max": 1,
+     "default": 0.1,
+     "step": 0.001
+    },
+    {
+     "name": "gain",
+     "label": "Gain",
+     "min": 0.1,
+     "max": 10,
+     "default": 1,
+     "step": 0.1
+    },
+    {
+     "name": "lofrq",
+     "label": "Low (Hz)",
+     "min": 50,
+     "max": 4000,
+     "default": 300,
+     "step": 50
+    },
+    {
+     "name": "hifrq",
+     "label": "High (Hz)",
+     "min": 200,
+     "max": 12000,
+     "default": 4000,
+     "step": 50
+    },
+    {
+     "name": "rate",
+     "label": "Sweep (Hz)",
+     "min": 0.1,
+     "max": 10,
+     "default": 2,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "filter.bandpass",
+   "label": "Resonant band-pass",
+   "category": "Filter & dynamics",
+   "program": "filter",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "freq",
+     "label": "Centre (Hz)",
+     "min": 50,
+     "max": 12000,
+     "default": 800,
+     "step": 10
+    },
+    {
+     "name": "acuity",
+     "label": "Resonance",
+     "min": 0.001,
+     "max": 1,
+     "default": 0.05,
+     "step": 0.001
+    },
+    {
+     "name": "gain",
+     "label": "Gain",
+     "min": 0.1,
+     "max": 10,
+     "default": 1,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "filter.notch",
+   "label": "Resonant notch",
+   "category": "Filter & dynamics",
+   "program": "filter",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "freq",
+     "label": "Centre (Hz)",
+     "min": 50,
+     "max": 12000,
+     "default": 800,
+     "step": 10
+    },
+    {
+     "name": "acuity",
+     "label": "Resonance",
+     "min": 0.001,
+     "max": 1,
+     "default": 0.05,
+     "step": 0.001
+    },
+    {
+     "name": "gain",
+     "label": "Gain",
+     "min": 0.1,
+     "max": 10,
+     "default": 1,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "filter.resonlo",
+   "label": "Resonant low-pass",
+   "category": "Filter & dynamics",
+   "program": "filter",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "freq",
+     "label": "Cutoff (Hz)",
+     "min": 50,
+     "max": 12000,
+     "default": 1200,
+     "step": 10
+    },
+    {
+     "name": "acuity",
+     "label": "Resonance",
+     "min": 0.001,
+     "max": 1,
+     "default": 0.1,
+     "step": 0.001
+    },
+    {
+     "name": "gain",
+     "label": "Gain",
+     "min": 0.1,
+     "max": 10,
+     "default": 1,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "filter.resonhi",
+   "label": "Resonant high-pass",
+   "category": "Filter & dynamics",
+   "program": "filter",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "freq",
+     "label": "Cutoff (Hz)",
+     "min": 50,
+     "max": 12000,
+     "default": 800,
+     "step": 10
+    },
+    {
+     "name": "acuity",
+     "label": "Resonance",
+     "min": 0.001,
+     "max": 1,
+     "default": 0.1,
+     "step": 0.001
+    },
+    {
+     "name": "gain",
+     "label": "Gain",
+     "min": 0.1,
+     "max": 10,
+     "default": 1,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "filter.phasing",
+   "label": "Phaser",
+   "category": "Filter & dynamics",
+   "program": "filter",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "gain",
+     "label": "Depth",
+     "min": -1,
+     "max": 0.95,
+     "default": 0.7,
+     "step": 0.05
+    },
+    {
+     "name": "delay",
+     "label": "Delay (ms)",
+     "min": 0.1,
+     "max": 20,
+     "default": 5,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "filter.iterated",
+   "label": "Iterated filter bank",
+   "category": "Filter & dynamics",
+   "program": "filter",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "root",
+     "label": "Root (MIDI)",
+     "min": 24,
+     "max": 84,
+     "default": 48,
+     "step": 1
+    },
+    {
+     "name": "q",
+     "label": "Q (tightness)",
+     "min": 1,
+     "max": 200,
+     "default": 50,
+     "step": 1
+    },
+    {
+     "name": "delay",
+     "label": "Iteration gap (s)",
+     "min": 0.02,
+     "max": 2,
+     "default": 0.15,
+     "step": 0.01
+    },
+    {
+     "name": "dur",
+     "label": "Output (s)",
+     "min": 1,
+     "max": 8,
+     "default": 3,
+     "step": 0.5
+    }
+   ]
+  },
+  {
+   "id": "filter.bank",
+   "label": "Harmonic filter bank",
+   "category": "Filter & dynamics",
+   "program": "filter",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "q",
+     "label": "Q (tightness)",
+     "min": 0.5,
+     "max": 200,
+     "default": 20,
+     "step": 0.5
+    },
+    {
+     "name": "lof",
+     "label": "Root (Hz)",
+     "min": 50,
+     "max": 2000,
+     "default": 200,
+     "step": 10
+    },
+    {
+     "name": "hif",
+     "label": "Top (Hz)",
+     "min": 1000,
+     "max": 12000,
+     "default": 8000,
+     "step": 100
+    }
+   ]
+  },
+  {
+   "id": "flatten.flatten",
+   "label": "Level (equalise)",
+   "category": "Envelope",
+   "program": "flatten",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "elementsize",
+     "label": "Element size (s)",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.15,
+     "step": 0.05
+    },
+    {
+     "name": "shoulder",
+     "label": "Rise time (ms)",
+     "min": 20,
+     "max": 50,
+     "default": 25,
+     "step": 5
+    }
+   ]
+  },
+  {
+   "id": "flutter.flutter",
+   "label": "Flutter (spatial tremolo)",
+   "category": "Spatialisation",
+   "program": "flutter",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "freq",
+     "label": "Rate (Hz)",
+     "min": 0.5,
+     "max": 30,
+     "default": 6,
+     "step": 0.5
+    },
+    {
+     "name": "depth",
+     "label": "Depth",
+     "min": 0.1,
+     "max": 4,
+     "default": 1,
+     "step": 0.05
+    },
+    {
+     "name": "gain",
+     "label": "Level",
+     "min": 0.1,
+     "max": 1,
+     "default": 1,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "focus.exag",
+   "label": "Exaggerate contour",
+   "category": "Spectral",
+   "program": "focus",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "exag",
+     "label": "Exaggeration",
+     "min": 0.1,
+     "max": 6,
+     "default": 2,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "focus.fold",
+   "label": "Fold into range",
+   "category": "Spectral",
+   "program": "focus",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "lofrq",
+     "label": "Low (Hz)",
+     "min": 50,
+     "max": 2000,
+     "default": 200,
+     "step": 10
+    },
+    {
+     "name": "hifrq",
+     "label": "High (Hz)",
+     "min": 200,
+     "max": 8000,
+     "default": 800,
+     "step": 10
+    }
+   ]
+  },
+  {
+   "id": "focus.step",
+   "label": "Step-freeze",
+   "category": "Spectral",
+   "program": "focus",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "step",
+     "label": "Step (s)",
+     "min": 0.02,
+     "max": 1,
+     "default": 0.08,
+     "step": 0.01
+    }
+   ]
+  },
+  {
+   "id": "focus.accu",
+   "label": "Accumulate",
+   "category": "Spectral",
+   "program": "focus",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "decay",
+     "label": "Decay /s",
+     "min": 0.1,
+     "max": 1,
+     "default": 0.9,
+     "step": 0.01
+    },
+    {
+     "name": "glis",
+     "label": "Glissando",
+     "min": -11.7,
+     "max": 11.7,
+     "default": 0,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "focus.focus",
+   "label": "Focus on peaks",
+   "category": "Spectral",
+   "program": "focus",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "bands",
+     "label": "Analysis (bands/8ve)",
+     "min": 0.5,
+     "max": 8,
+     "default": 1,
+     "step": 0.5
+    },
+    {
+     "name": "peaks",
+     "label": "Peaks",
+     "min": 1,
+     "max": 16,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "bw",
+     "label": "Bandwidth (8ves)",
+     "min": 0.1,
+     "max": 2,
+     "default": 0.5,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "focus.hold",
+   "label": "Hold spectrum",
+   "category": "Spectral",
+   "program": "focus",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "time",
+     "label": "Hold at (s)",
+     "min": 0,
+     "max": 60,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "dur",
+     "label": "Hold for (s)",
+     "min": 0.05,
+     "max": 5,
+     "default": 0.5,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "focus.freeze",
+   "label": "Freeze spectrum",
+   "category": "Spectral",
+   "program": "focus",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "time",
+     "label": "Freeze from (s)",
+     "min": 0,
+     "max": 60,
+     "default": 0.5,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "formants.vocode",
+   "label": "Vocoder (cross-synth)",
+   "category": "Formants",
+   "program": "formants",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "bands",
+     "label": "Bands / octave",
+     "min": 2,
+     "max": 12,
+     "default": 8,
+     "step": 1
+    },
+    {
+     "name": "gain",
+     "label": "Gain",
+     "min": 0.1,
+     "max": 2,
+     "default": 1,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "fractal.wave",
+   "label": "Fractal wave",
+   "category": "Pitch & time",
+   "program": "fractal",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "depth",
+     "label": "Depth (semitones)",
+     "min": -8,
+     "max": 8,
+     "default": -3,
+     "step": 1
+    },
+    {
+     "name": "dur",
+     "label": "Pattern (s)",
+     "min": 0.1,
+     "max": 2,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "maxfrac",
+     "label": "Max depth",
+     "min": 0,
+     "max": 12,
+     "default": 0,
+     "step": 1
+    },
+    {
+     "name": "stretch",
+     "label": "Time stretch",
+     "min": 1,
+     "max": 2,
+     "default": 1,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "fracture.fracture",
+   "label": "Fracture (fragment scatter)",
+   "category": "Spatialisation",
+   "program": "fracture",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "chns",
+     "label": "Out channels",
+     "min": 2,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "strms",
+     "label": "Streams",
+     "min": 4,
+     "max": 32,
+     "default": 8,
+     "step": 1
+    },
+    {
+     "name": "pulse",
+     "label": "Pulse gap (s)",
+     "min": 0.05,
+     "max": 4,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "edpth",
+     "label": "Envelope depth",
+     "min": 0,
+     "max": 2,
+     "default": 1,
+     "step": 0.05
+    },
+    {
+     "name": "stkint",
+     "label": "Stack interval (st)",
+     "min": 0,
+     "max": 12,
+     "default": 0,
+     "step": 1
+    },
+    {
+     "name": "disp",
+     "label": "Stream scatter",
+     "min": 0,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "prnd",
+     "label": "Pulse jitter",
+     "min": 0,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "peak",
+     "label": "Attack position",
+     "min": 0.05,
+     "max": 0.9,
+     "default": 0.15,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "frfractal.fractal",
+   "label": "Fractalise",
+   "category": "Extend & segment",
+   "program": "frfractal",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "layers",
+     "label": "Layers",
+     "min": 2,
+     "max": 3,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "splicelen",
+     "label": "Splice (ms)",
+     "min": 5,
+     "max": 50,
+     "default": 15,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "gate.gate",
+   "label": "Noise gate",
+   "category": "Filter & dynamics",
+   "program": "gate",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "level",
+     "label": "Threshold (dB)",
+     "min": -96,
+     "max": 0,
+     "default": -30,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "gate.edit",
+   "label": "Gate (remove gaps)",
+   "category": "Filter & dynamics",
+   "program": "gate",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "level",
+     "label": "Threshold (dB)",
+     "min": -96,
+     "max": 0,
+     "default": -30,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "glisten.glisten",
+   "label": "Glisten (partition)",
+   "category": "Spectral",
+   "program": "glisten",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "grpdiv",
+     "label": "Sets",
+     "min": 2,
+     "max": 16,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "setdur",
+     "label": "Set dur (windows)",
+     "min": 1,
+     "max": 32,
+     "default": 8,
+     "step": 1
+    },
+    {
+     "name": "pshift",
+     "label": "Pitch shift",
+     "min": 0,
+     "max": 12,
+     "default": 0,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "grain.duplicate",
+   "label": "Duplicate grains",
+   "category": "Granular",
+   "program": "grain",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "n",
+     "label": "Repeats",
+     "min": 1,
+     "max": 8,
+     "default": 3,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "grain.timewarp",
+   "label": "Grain time-warp",
+   "category": "Granular",
+   "program": "grain",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "ratio",
+     "label": "Stretch ×",
+     "min": 0.25,
+     "max": 4,
+     "default": 2,
+     "step": 0.25
+    }
+   ]
+  },
+  {
+   "id": "grain.reverse",
+   "label": "Reverse grain order",
+   "category": "Granular",
+   "program": "grain",
+   "domain": "sound",
+   "params": []
+  },
+  {
+   "id": "grain.omit",
+   "label": "Omit grains",
+   "category": "Granular",
+   "program": "grain",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "keep",
+     "label": "Keep",
+     "min": 1,
+     "max": 4,
+     "default": 1,
+     "step": 1
+    },
+    {
+     "name": "outof",
+     "label": "out of",
+     "min": 2,
+     "max": 6,
+     "default": 2,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "grain.reorder",
+   "label": "Reorder grains",
+   "category": "Granular",
+   "program": "grain",
+   "domain": "sound",
+   "params": []
+  },
+  {
+   "id": "grain.align",
+   "label": "Align grains (2 sounds)",
+   "category": "Granular",
+   "program": "grain",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "offset",
+     "label": "Offset (s)",
+     "min": 0,
+     "max": 4,
+     "default": 0,
+     "step": 0.05
+    },
+    {
+     "name": "gate2",
+     "label": "2nd gate",
+     "min": 0.001,
+     "max": 1,
+     "default": 0.05,
+     "step": 0.001
+    },
+    {
+     "name": "gate1",
+     "label": "1st gate",
+     "min": 0.001,
+     "max": 1,
+     "default": 0.05,
+     "step": 0.001
+    }
+   ]
+  },
+  {
+   "id": "grain.repitch",
+   "label": "Repitch grains",
+   "category": "Granular",
+   "program": "grain",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "semitones",
+     "label": "Semitones",
+     "min": -24,
+     "max": 24,
+     "default": 7,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "grainex.extend",
+   "label": "Extend grain region",
+   "category": "Granular",
+   "program": "grainex",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "wsiz",
+     "label": "Window (ms)",
+     "min": 10,
+     "max": 200,
+     "default": 50,
+     "step": 5
+    },
+    {
+     "name": "trof",
+     "label": "Trough depth",
+     "min": 0.05,
+     "max": 0.95,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "plus",
+     "label": "Add (s)",
+     "min": 0.5,
+     "max": 30,
+     "default": 2,
+     "step": 0.5
+    },
+    {
+     "name": "stt",
+     "label": "Region start (s)",
+     "min": 0,
+     "max": 10,
+     "default": 0,
+     "step": 0.1
+    },
+    {
+     "name": "end",
+     "label": "Region end (s)",
+     "min": 0.2,
+     "max": 30,
+     "default": 1,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "hilite.trace",
+   "label": "Trace partials",
+   "category": "Spectral",
+   "program": "hilite",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "partials",
+     "label": "Keep N loudest",
+     "min": 1,
+     "max": 64,
+     "default": 8,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "hilite.bltr",
+   "label": "Blur + trace",
+   "category": "Spectral",
+   "program": "hilite",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "blurring",
+     "label": "Blur windows",
+     "min": 1,
+     "max": 100,
+     "default": 10,
+     "step": 1
+    },
+    {
+     "name": "tracing",
+     "label": "Keep N loudest",
+     "min": 1,
+     "max": 64,
+     "default": 8,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "hilite.splow",
+   "label": "Spectral low-pass",
+   "category": "Spectral",
+   "program": "hilite",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "freq",
+     "label": "Cutoff (Hz)",
+     "min": 50,
+     "max": 16000,
+     "default": 2000,
+     "step": 10
+    },
+    {
+     "name": "q",
+     "label": "Skirt (Hz)",
+     "min": 1,
+     "max": 4000,
+     "default": 200,
+     "step": 10
+    }
+   ]
+  },
+  {
+   "id": "hilite.sphigh",
+   "label": "Spectral high-pass",
+   "category": "Spectral",
+   "program": "hilite",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "freq",
+     "label": "Cutoff (Hz)",
+     "min": 50,
+     "max": 16000,
+     "default": 800,
+     "step": 10
+    },
+    {
+     "name": "q",
+     "label": "Skirt (Hz)",
+     "min": 1,
+     "max": 4000,
+     "default": 200,
+     "step": 10
+    }
+   ]
+  },
+  {
+   "id": "hilite.spband",
+   "label": "Spectral band-pass",
+   "category": "Spectral",
+   "program": "hilite",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "freqlo",
+     "label": "Low (Hz)",
+     "min": 50,
+     "max": 16000,
+     "default": 400,
+     "step": 10
+    },
+    {
+     "name": "freqhi",
+     "label": "High (Hz)",
+     "min": 80,
+     "max": 16000,
+     "default": 3000,
+     "step": 10
+    },
+    {
+     "name": "q",
+     "label": "Skirt (Hz)",
+     "min": 1,
+     "max": 4000,
+     "default": 200,
+     "step": 10
+    }
+   ]
+  },
+  {
+   "id": "hilite.spnotch",
+   "label": "Spectral notch",
+   "category": "Spectral",
+   "program": "hilite",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "freqlo",
+     "label": "Low (Hz)",
+     "min": 50,
+     "max": 16000,
+     "default": 400,
+     "step": 10
+    },
+    {
+     "name": "freqhi",
+     "label": "High (Hz)",
+     "min": 80,
+     "max": 16000,
+     "default": 3000,
+     "step": 10
+    },
+    {
+     "name": "q",
+     "label": "Skirt (Hz)",
+     "min": 1,
+     "max": 4000,
+     "default": 200,
+     "step": 10
+    }
+   ]
+  },
+  {
+   "id": "hilite.pluck",
+   "label": "Emphasise changes",
+   "category": "Spectral",
+   "program": "hilite",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "gain",
+     "label": "Gain",
+     "min": 0.5,
+     "max": 20,
+     "default": 4,
+     "step": 0.5
+    }
+   ]
+  },
+  {
+   "id": "hilite.arpeg",
+   "label": "Arpeggiate spectrum",
+   "category": "Spectral",
+   "program": "hilite",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "wave",
+     "label": "Sweep shape",
+     "min": 1,
+     "max": 4,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "rate",
+     "label": "Rate (Hz)",
+     "min": 0.1,
+     "max": 20,
+     "default": 4,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "hilite.band",
+   "label": "Split-band gain",
+   "category": "Spectral",
+   "program": "hilite",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "split",
+     "label": "Split (Hz)",
+     "min": 200,
+     "max": 8000,
+     "default": 1500,
+     "step": 50
+    },
+    {
+     "name": "loamp",
+     "label": "Low gain",
+     "min": 0,
+     "max": 4,
+     "default": 2,
+     "step": 0.1
+    },
+    {
+     "name": "hiamp",
+     "label": "High gain",
+     "min": 0,
+     "max": 4,
+     "default": 0.3,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "housekeep.split",
+   "label": "Split channels",
+   "category": "Mix",
+   "program": "housekeep",
+   "domain": "sound",
+   "params": []
+  },
+  {
+   "id": "hover.hover",
+   "label": "Hover (zigzag read)",
+   "category": "Granular",
+   "program": "hover",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "frq",
+     "label": "Read rate (Hz)",
+     "min": 20,
+     "max": 1000,
+     "default": 200,
+     "step": 5
+    },
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 0.5,
+     "max": 6,
+     "default": 2,
+     "step": 0.5
+    }
+   ]
+  },
+  {
+   "id": "hover2.hover2",
+   "label": "Hover 2 (symmetric zigzag)",
+   "category": "Granular",
+   "program": "hover2",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "frq",
+     "label": "Read rate (Hz)",
+     "min": 20,
+     "max": 1000,
+     "default": 200,
+     "step": 5
+    },
+    {
+     "name": "loc",
+     "label": "Read point (s)",
+     "min": 0,
+     "max": 10,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 0.5,
+     "max": 6,
+     "default": 2,
+     "step": 0.5
+    }
+   ]
+  },
+  {
+   "id": "isolate.threshold",
+   "label": "Isolate loud segments",
+   "category": "Extend & segment",
+   "program": "isolate",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "dbon",
+     "label": "On level (dB)",
+     "min": -60,
+     "max": -1,
+     "default": -20,
+     "step": 1
+    },
+    {
+     "name": "dboff",
+     "label": "Off level (dB)",
+     "min": -90,
+     "max": -1,
+     "default": -40,
+     "step": 1
+    },
+    {
+     "name": "splice",
+     "label": "Splice (ms)",
+     "min": 0,
+     "max": 500,
+     "default": 15,
+     "step": 1
+    },
+    {
+     "name": "minms",
+     "label": "Min segment (ms)",
+     "min": 20,
+     "max": 500,
+     "default": 50,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "isolate.slices",
+   "label": "Slice into pieces",
+   "category": "Extend & segment",
+   "program": "isolate",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "pieces",
+     "label": "Pieces",
+     "min": 2,
+     "max": 16,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "splice",
+     "label": "Splice (ms)",
+     "min": 0,
+     "max": 500,
+     "default": 15,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "iterfof.line",
+   "label": "FOF iterate (pitch line)",
+   "category": "Extend & segment",
+   "program": "iterfof",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "pitch",
+     "label": "Pitch (MIDI)",
+     "min": 24,
+     "max": 96,
+     "default": 60,
+     "step": 1
+    },
+    {
+     "name": "outdur",
+     "label": "Duration (s)",
+     "min": 0.5,
+     "max": 20,
+     "default": 4,
+     "step": 0.5
+    },
+    {
+     "name": "prand",
+     "label": "Pitch scatter",
+     "min": 0,
+     "max": 2,
+     "default": 0.5,
+     "step": 0.1
+    },
+    {
+     "name": "ampcut",
+     "label": "Level scatter",
+     "min": 0,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "rand",
+     "label": "Time scatter",
+     "min": 0,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "vibfrq",
+     "label": "Vibrato (Hz)",
+     "min": 0,
+     "max": 12,
+     "default": 5,
+     "step": 0.5
+    },
+    {
+     "name": "vibdepth",
+     "label": "Vibrato depth",
+     "min": 0,
+     "max": 2,
+     "default": 0.3,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "iterline.iterline",
+   "label": "Iterate on a pitch line",
+   "category": "Extend & segment",
+   "program": "iterline",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 1,
+     "max": 10,
+     "default": 4,
+     "step": 0.5
+    },
+    {
+     "name": "start",
+     "label": "Start pitch (st)",
+     "min": -12,
+     "max": 12,
+     "default": 0,
+     "step": 1
+    },
+    {
+     "name": "end",
+     "label": "End pitch (st)",
+     "min": -12,
+     "max": 12,
+     "default": 12,
+     "step": 1
+    },
+    {
+     "name": "delay",
+     "label": "Delay (s)",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "rand",
+     "label": "Time scatter",
+     "min": 0,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "pshift",
+     "label": "Pitch scatter",
+     "min": 0,
+     "max": 12,
+     "default": 1,
+     "step": 0.5
+    },
+    {
+     "name": "ampcut",
+     "label": "Level scatter",
+     "min": 0,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "seed",
+     "label": "Seed",
+     "min": 1,
+     "max": 100,
+     "default": 1,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "madrid.syncopate",
+   "label": "Spatial syncopation",
+   "category": "Spatialisation",
+   "program": "madrid",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 1,
+     "max": 20,
+     "default": 6,
+     "step": 0.5
+    },
+    {
+     "name": "chans",
+     "label": "Out channels",
+     "min": 2,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "strmcnt",
+     "label": "Streams",
+     "min": 2,
+     "max": 8,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "delfact",
+     "label": "Deletions",
+     "min": 0,
+     "max": 1,
+     "default": 0.4,
+     "step": 0.05
+    },
+    {
+     "name": "step",
+     "label": "Step (s)",
+     "min": 0.05,
+     "max": 2,
+     "default": 0.25,
+     "step": 0.05
+    },
+    {
+     "name": "rand",
+     "label": "Step scatter",
+     "min": 0,
+     "max": 1,
+     "default": 0.2,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "matrix.swap",
+   "label": "Swap FFT real/imag",
+   "category": "Spectral",
+   "program": "matrix",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "analchans",
+     "label": "FFT size",
+     "choices": [
+      [
+       "256",
+       "256"
+      ],
+      [
+       "512",
+       "512"
+      ],
+      [
+       "1024",
+       "1024"
+      ],
+      [
+       "2048",
+       "2048"
+      ],
+      [
+       "4096",
+       "4096"
+      ]
+     ]
+    },
+    {
+     "name": "winoverlap",
+     "label": "Overlap",
+     "min": 1,
+     "max": 4,
+     "default": 3,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "matrix.invphase",
+   "label": "Invert FFT phase",
+   "category": "Spectral",
+   "program": "matrix",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "analchans",
+     "label": "FFT size",
+     "choices": [
+      [
+       "256",
+       "256"
+      ],
+      [
+       "512",
+       "512"
+      ],
+      [
+       "1024",
+       "1024"
+      ],
+      [
+       "2048",
+       "2048"
+      ],
+      [
+       "4096",
+       "4096"
+      ]
+     ]
+    },
+    {
+     "name": "winoverlap",
+     "label": "Overlap",
+     "min": 1,
+     "max": 4,
+     "default": 3,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "mchanpan.spread",
+   "label": "Multichannel spread",
+   "category": "Spatialisation",
+   "program": "mchanpan",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "chans",
+     "label": "Out channels",
+     "min": 3,
+     "max": 8,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "centre",
+     "label": "Centre channel",
+     "min": 1,
+     "max": 8,
+     "default": 1,
+     "step": 1
+    },
+    {
+     "name": "spread",
+     "label": "Spread (chans)",
+     "min": 0,
+     "max": 16,
+     "default": 8,
+     "step": 1
+    },
+    {
+     "name": "depth",
+     "label": "Depth (chans)",
+     "min": 0,
+     "max": 8,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "rolloff",
+     "label": "Rolloff",
+     "min": 0,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "mchanrev.stadium",
+   "label": "Multichannel echoes",
+   "category": "Delay & reverb",
+   "program": "mchanrev",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "gain",
+     "label": "Input gain",
+     "min": 0.1,
+     "max": 1,
+     "default": 0.6457,
+     "step": 0.01
+    },
+    {
+     "name": "rolloff",
+     "label": "Roll-off",
+     "min": 0.05,
+     "max": 1,
+     "default": 1,
+     "step": 0.05
+    },
+    {
+     "name": "size",
+     "label": "Echo spacing ×",
+     "min": 0.1,
+     "max": 4,
+     "default": 1,
+     "step": 0.1
+    },
+    {
+     "name": "count",
+     "label": "Echoes",
+     "min": 10,
+     "max": 100,
+     "default": 30,
+     "step": 5
+    },
+    {
+     "name": "chans",
+     "label": "Out channels",
+     "min": 2,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "centre",
+     "label": "Centre channel",
+     "min": 1,
+     "max": 8,
+     "default": 1,
+     "step": 0.5
+    },
+    {
+     "name": "spread",
+     "label": "Spread (chans)",
+     "min": 2,
+     "max": 8,
+     "default": 2,
+     "step": 0.5
+    }
+   ]
+  },
+  {
+   "id": "mchshred.shred",
+   "label": "Shred to multichannel",
+   "category": "Spatialisation",
+   "program": "mchshred",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "repeats",
+     "label": "Shred passes",
+     "min": 1,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "chunklen",
+     "label": "Chunk (s)",
+     "min": 0.02,
+     "max": 0.5,
+     "default": 0.15,
+     "step": 0.01
+    },
+    {
+     "name": "scatter",
+     "label": "Cut scatter",
+     "min": 0,
+     "max": 2,
+     "default": 1,
+     "step": 0.25
+    },
+    {
+     "name": "chans",
+     "label": "Out channels",
+     "min": 2,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "modify.speed",
+   "label": "Transpose (speed)",
+   "category": "Pitch & time",
+   "program": "modify",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "semitones",
+     "label": "Semitones",
+     "min": -24,
+     "max": 24,
+     "default": -7,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "modify.loudness",
+   "label": "Gain",
+   "category": "Pitch & time",
+   "program": "modify",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "gain",
+     "label": "Gain",
+     "min": 0.1,
+     "max": 6,
+     "default": 2,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "modify.stack",
+   "label": "Stack (harmoniser)",
+   "category": "Pitch & time",
+   "program": "modify",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "transpos",
+     "label": "Interval (semitones)",
+     "min": -24,
+     "max": 24,
+     "default": 12,
+     "step": 1
+    },
+    {
+     "name": "count",
+     "label": "Layers",
+     "min": 2,
+     "max": 8,
+     "default": 3,
+     "step": 1
+    },
+    {
+     "name": "lean",
+     "label": "Top level",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "atk",
+     "label": "Attack at (s)",
+     "min": 0,
+     "max": 2,
+     "default": 0,
+     "step": 0.05
+    },
+    {
+     "name": "gain",
+     "label": "Gain",
+     "min": 0.1,
+     "max": 4,
+     "default": 1,
+     "step": 0.1
+    },
+    {
+     "name": "dur",
+     "label": "Length",
+     "min": 0.1,
+     "max": 1,
+     "default": 1,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "modify.space",
+   "label": "Pan (mono → stereo)",
+   "category": "Spatialisation",
+   "program": "modify",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "pan",
+     "label": "Position (L −1 … +1 R)",
+     "min": -1,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "modify.shudder",
+   "label": "Shudder",
+   "category": "Filter & dynamics",
+   "program": "modify",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "start",
+     "label": "Start (s)",
+     "min": 0,
+     "max": 5,
+     "default": 0,
+     "step": 0.05
+    },
+    {
+     "name": "frq",
+     "label": "Rate (Hz)",
+     "min": 0.5,
+     "max": 30,
+     "default": 8,
+     "step": 0.5
+    },
+    {
+     "name": "scatter",
+     "label": "Time scatter",
+     "min": 0,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "spread",
+     "label": "Stereo spread",
+     "min": 0,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "mindepth",
+     "label": "Min depth",
+     "min": 0,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "maxdepth",
+     "label": "Max depth",
+     "min": 0,
+     "max": 1,
+     "default": 0.8,
+     "step": 0.05
+    },
+    {
+     "name": "minwidth",
+     "label": "Min width (s)",
+     "min": 0.02,
+     "max": 0.5,
+     "default": 0.05,
+     "step": 0.01
+    },
+    {
+     "name": "maxwidth",
+     "label": "Max width (s)",
+     "min": 0.02,
+     "max": 0.5,
+     "default": 0.15,
+     "step": 0.01
+    }
+   ]
+  },
+  {
+   "id": "modify.revecho",
+   "label": "Delay / resonance",
+   "category": "Delay & reverb",
+   "program": "modify",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "delay",
+     "label": "Delay (ms)",
+     "min": 1,
+     "max": 1000,
+     "default": 120,
+     "step": 1
+    },
+    {
+     "name": "mix",
+     "label": "Mix",
+     "min": 0,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "feedback",
+     "label": "Feedback",
+     "min": 0,
+     "max": 0.95,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "tail",
+     "label": "Tail (s)",
+     "min": 0,
+     "max": 5,
+     "default": 1,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "modify.brassage",
+   "label": "Granular pitch-shift",
+   "category": "Granular",
+   "program": "modify",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "pitch",
+     "label": "Pitch shift",
+     "min": -2,
+     "max": 2,
+     "default": -0.5,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "modify.convolve",
+   "label": "Convolve",
+   "category": "Combine",
+   "program": "modify",
+   "domain": "sound",
+   "params": []
+  },
+  {
+   "id": "morph.morph",
+   "label": "Spectral morph",
+   "category": "Morph",
+   "program": "morph",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "dur",
+     "label": "Morph over (s)",
+     "min": 0.1,
+     "max": 4,
+     "default": 0.5,
+     "step": 0.1
+    },
+    {
+     "name": "expa",
+     "label": "Amp curve",
+     "min": 0.1,
+     "max": 4,
+     "default": 1,
+     "step": 0.1
+    },
+    {
+     "name": "expf",
+     "label": "Freq curve",
+     "min": 0.1,
+     "max": 4,
+     "default": 1,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "morph.bridge",
+   "label": "Spectral bridge",
+   "category": "Morph",
+   "program": "morph",
+   "domain": "spectral",
+   "params": []
+  },
+  {
+   "id": "motor.motor",
+   "label": "Motor (pulse engine)",
+   "category": "Texture",
+   "program": "motor",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 1,
+     "max": 20,
+     "default": 4,
+     "step": 0.5
+    },
+    {
+     "name": "freq",
+     "label": "Inner rate (Hz)",
+     "min": 2,
+     "max": 100,
+     "default": 20,
+     "step": 1
+    },
+    {
+     "name": "pulse",
+     "label": "Outer rate (Hz)",
+     "min": 0.1,
+     "max": 10,
+     "default": 2,
+     "step": 0.1
+    },
+    {
+     "name": "fratio",
+     "label": "Inner on/off",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "pratio",
+     "label": "Outer on/off",
+     "min": 0.1,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "sym",
+     "label": "Symmetry",
+     "min": 0,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "frand",
+     "label": "Rate jitter",
+     "min": 0,
+     "max": 1,
+     "default": 0,
+     "step": 0.05
+    },
+    {
+     "name": "jitter",
+     "label": "Pitch jitter (st)",
+     "min": 0,
+     "max": 3,
+     "default": 0,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "multimix.spread",
+   "label": "Spread to channels",
+   "category": "Spatialisation",
+   "program": "multimix",
+   "domain": "sound",
+   "unsupported": "needs multiple input files (mixfile), not a single-input stage",
+   "params": []
+  },
+  {
+   "id": "multimix.channels",
+   "label": "Distribute across N channels",
+   "category": "Spatialisation",
+   "program": "multimix",
+   "domain": "sound",
+   "unsupported": "needs multiple input files (mixfile), not a single-input stage",
+   "params": [
+    {
+     "name": "outchans",
+     "label": "Output channels",
+     "min": 2,
+     "max": 16,
+     "default": 6,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "newdelay.newdelay",
+   "label": "Tuned delay",
+   "category": "Delay & reverb",
+   "program": "newdelay",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "midipitch",
+     "label": "Pitch (MIDI)",
+     "min": 24,
+     "max": 96,
+     "default": 48,
+     "step": 1
+    },
+    {
+     "name": "mix",
+     "label": "Mix",
+     "min": 0,
+     "max": 1,
+     "default": 0.6,
+     "step": 0.05
+    },
+    {
+     "name": "feedback",
+     "label": "Feedback",
+     "min": 0,
+     "max": 0.95,
+     "default": 0.5,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "newmorph.morph",
+   "label": "Peak morph",
+   "category": "Morph",
+   "program": "newmorph",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "shape",
+     "label": "Curve",
+     "choices": [
+      [
+       "Linear",
+       "1"
+      ],
+      [
+       "Cosinusoidal",
+       "2"
+      ]
+     ]
+    },
+    {
+     "name": "stagger",
+     "label": "Stagger (s)",
+     "min": 0,
+     "max": 2,
+     "default": 0,
+     "step": 0.1
+    },
+    {
+     "name": "startmorph",
+     "label": "Morph start (s)",
+     "min": 0,
+     "max": 4,
+     "default": 0,
+     "step": 0.1
+    },
+    {
+     "name": "endmorph",
+     "label": "Morph end (s)",
+     "min": 0.1,
+     "max": 4,
+     "default": 0.5,
+     "step": 0.1
+    },
+    {
+     "name": "exponent",
+     "label": "Curve exponent",
+     "min": 0.1,
+     "max": 4,
+     "default": 1,
+     "step": 0.1
+    },
+    {
+     "name": "peaks",
+     "label": "Peaks",
+     "min": 1,
+     "max": 16,
+     "default": 8,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "newmorph.tune",
+   "label": "Tune to harmonic field",
+   "category": "Morph",
+   "program": "newmorph",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "shape",
+     "label": "Curve",
+     "choices": [
+      [
+       "Linear",
+       "5"
+      ],
+      [
+       "Cosinusoidal",
+       "6"
+      ]
+     ]
+    },
+    {
+     "name": "stagger",
+     "label": "Stagger (s)",
+     "min": 0,
+     "max": 2,
+     "default": 0,
+     "step": 0.1
+    },
+    {
+     "name": "startmorph",
+     "label": "Morph start (s)",
+     "min": 0,
+     "max": 4,
+     "default": 0,
+     "step": 0.1
+    },
+    {
+     "name": "endmorph",
+     "label": "Morph end (s)",
+     "min": 0.1,
+     "max": 4,
+     "default": 0.5,
+     "step": 0.1
+    },
+    {
+     "name": "exponent",
+     "label": "Curve exponent",
+     "min": 0.1,
+     "max": 4,
+     "default": 1,
+     "step": 0.1
+    },
+    {
+     "name": "peaks",
+     "label": "Peaks",
+     "min": 1,
+     "max": 16,
+     "default": 8,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "newtex.drunk",
+   "label": "Grain texture (spatial)",
+   "category": "Texture",
+   "program": "newtex",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 0.5,
+     "max": 20,
+     "default": 4,
+     "step": 0.5
+    },
+    {
+     "name": "chans",
+     "label": "Out channels",
+     "min": 2,
+     "max": 8,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "density",
+     "label": "Simultaneous grains",
+     "min": 1,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "step",
+     "label": "Change rate (s)",
+     "min": 0.02,
+     "max": 2,
+     "default": 0.2,
+     "step": 0.02
+    }
+   ]
+  },
+  {
+   "id": "packet.make",
+   "label": "Sound packet",
+   "category": "Synthesis",
+   "program": "packet",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "time",
+     "label": "Packet at (s)",
+     "min": 0,
+     "max": 60,
+     "default": 0.2,
+     "step": 0.01
+    },
+    {
+     "name": "dur",
+     "label": "Packet (ms)",
+     "min": 2,
+     "max": 200,
+     "default": 80,
+     "step": 1
+    },
+    {
+     "name": "narrowing",
+     "label": "Narrowing",
+     "min": 0,
+     "max": 1000,
+     "default": 1,
+     "step": 0.5
+    },
+    {
+     "name": "centring",
+     "label": "Peak centring",
+     "min": -1,
+     "max": 1,
+     "default": 0,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "panorama.spatial",
+   "label": "Spatial panorama",
+   "category": "Spatialisation",
+   "program": "panorama",
+   "domain": "sound",
+   "unsupported": "needs multiple input files (mixfile), not a single-input stage",
+   "params": [
+    {
+     "name": "speakers",
+     "label": "Loudspeakers",
+     "min": 3,
+     "max": 8,
+     "default": 6,
+     "step": 1
+    },
+    {
+     "name": "width",
+     "label": "Array width (°)",
+     "min": 190,
+     "max": 360,
+     "default": 360,
+     "step": 5
+    }
+   ]
+  },
+  {
+   "id": "partition.wavesets",
+   "label": "Partition (wavesets)",
+   "category": "Extend & segment",
+   "program": "partition",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "pieces",
+     "label": "Output files",
+     "min": 2,
+     "max": 8,
+     "default": 3,
+     "step": 1
+    },
+    {
+     "name": "group",
+     "label": "Wavesets per block",
+     "min": 1,
+     "max": 128,
+     "default": 16,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "partition.blocks",
+   "label": "Partition (time blocks)",
+   "category": "Extend & segment",
+   "program": "partition",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "pieces",
+     "label": "Output files",
+     "min": 2,
+     "max": 8,
+     "default": 3,
+     "step": 1
+    },
+    {
+     "name": "blockdur",
+     "label": "Block length (s)",
+     "min": 0.02,
+     "max": 1,
+     "default": 0.2,
+     "step": 0.02
+    },
+    {
+     "name": "rand",
+     "label": "Randomise",
+     "min": 0,
+     "max": 1,
+     "default": 0,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "phase.stereo",
+   "label": "Stereo enhance",
+   "category": "Spatialisation",
+   "program": "phase",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "transfer",
+     "label": "Amount",
+     "min": 0.1,
+     "max": 0.95,
+     "default": 0.7,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "phasor.phasor",
+   "label": "Phasing (multi-stream)",
+   "category": "Spatialisation",
+   "program": "phasor",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "streams",
+     "label": "Streams",
+     "min": 2,
+     "max": 8,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "phasfrq",
+     "label": "Sweep rate (Hz)",
+     "min": 0.2,
+     "max": 10,
+     "default": 1,
+     "step": 0.1
+    },
+    {
+     "name": "shift",
+     "label": "Depth (st)",
+     "min": 0,
+     "max": 12,
+     "default": 4,
+     "step": 0.5
+    },
+    {
+     "name": "chans",
+     "label": "Out channels",
+     "min": 2,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "offset",
+     "label": "Offset (ms)",
+     "min": 0,
+     "max": 500,
+     "default": 0,
+     "step": 10
+    }
+   ]
+  },
+  {
+   "id": "pitch.transp",
+   "label": "Transpose part of spectrum",
+   "category": "Spectral pitch",
+   "program": "pitch",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "split",
+     "label": "Split (Hz)",
+     "min": 100,
+     "max": 6000,
+     "default": 1000,
+     "step": 50
+    },
+    {
+     "name": "semitones",
+     "label": "Semitones",
+     "min": -24,
+     "max": 24,
+     "default": 7,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "pitch.pick",
+   "label": "Pick harmonics",
+   "category": "Spectral pitch",
+   "program": "pitch",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "fundamental",
+     "label": "Fundamental (Hz)",
+     "min": 20,
+     "max": 4000,
+     "default": 220,
+     "step": 1
+    },
+    {
+     "name": "clarity",
+     "label": "Clarity",
+     "min": 0,
+     "max": 1,
+     "default": 1,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "pitch.tune",
+   "label": "Tune to pitch",
+   "category": "Spectral pitch",
+   "program": "pitch",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "midi",
+     "label": "Target (MIDI)",
+     "min": 24,
+     "max": 96,
+     "default": 48,
+     "step": 1
+    },
+    {
+     "name": "clarity",
+     "label": "Clarity",
+     "min": 0,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "pitch.chord",
+   "label": "Spectral chord",
+   "category": "Spectral pitch",
+   "program": "pitch",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "v1",
+     "label": "Voice 1 (semis)",
+     "min": -24,
+     "max": 24,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "v2",
+     "label": "Voice 2 (semis)",
+     "min": -24,
+     "max": 24,
+     "default": 7,
+     "step": 1
+    },
+    {
+     "name": "v3",
+     "label": "Voice 3 (semis)",
+     "min": -24,
+     "max": 24,
+     "default": 12,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "pitch.octmove",
+   "label": "Octave up (keep formants)",
+   "category": "Spectral pitch",
+   "program": "pitch",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "ratio",
+     "label": "Interval ratio",
+     "min": 2,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "pitch.octmovedn",
+   "label": "Octave down (keep formants)",
+   "category": "Spectral pitch",
+   "program": "pitch",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "ratio",
+     "label": "Interval ratio",
+     "min": 2,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "pitch.altharms",
+   "label": "Delete alternate harmonics",
+   "category": "Spectral pitch",
+   "program": "pitch",
+   "domain": "spectral",
+   "params": []
+  },
+  {
+   "id": "psow.stretch",
+   "label": "Pitch-sync stretch",
+   "category": "Pitch-sync grains",
+   "program": "psow",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "stretch",
+     "label": "Stretch ×",
+     "min": 0.25,
+     "max": 4,
+     "default": 2,
+     "step": 0.25
+    },
+    {
+     "name": "segcnt",
+     "label": "Grains/chunk",
+     "min": 1,
+     "max": 16,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "pitch",
+     "label": "Pitch hint (Hz)",
+     "min": 50,
+     "max": 2000,
+     "default": 220,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "psow.dupl",
+   "label": "Pitch-sync duplicate",
+   "category": "Pitch-sync grains",
+   "program": "psow",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "repeats",
+     "label": "Repeats",
+     "min": 2,
+     "max": 8,
+     "default": 3,
+     "step": 1
+    },
+    {
+     "name": "segcnt",
+     "label": "Grains/chunk",
+     "min": 1,
+     "max": 16,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "pitch",
+     "label": "Pitch hint (Hz)",
+     "min": 50,
+     "max": 2000,
+     "default": 220,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "psow.sustain",
+   "label": "Freeze grain (sustain)",
+   "category": "Pitch-sync grains",
+   "program": "psow",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "start",
+     "label": "Grain start (s)",
+     "min": 0,
+     "max": 60,
+     "default": 0.2,
+     "step": 0.05
+    },
+    {
+     "name": "end",
+     "label": "Grain end (s)",
+     "min": 0.05,
+     "max": 60,
+     "default": 0.4,
+     "step": 0.05
+    },
+    {
+     "name": "dur",
+     "label": "Output (s)",
+     "min": 0.5,
+     "max": 20,
+     "default": 3,
+     "step": 0.5
+    },
+    {
+     "name": "vibfrq",
+     "label": "Vibrato (Hz)",
+     "min": 0,
+     "max": 20,
+     "default": 5,
+     "step": 0.5
+    },
+    {
+     "name": "vibdepth",
+     "label": "Vib depth (st)",
+     "min": 0,
+     "max": 3,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "nudge",
+     "label": "Nudge",
+     "min": 0,
+     "max": 24,
+     "default": 0,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "pulser.pulses",
+   "label": "Pulse stream",
+   "category": "Texture",
+   "program": "pulser",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 0.5,
+     "max": 20,
+     "default": 4,
+     "step": 0.5
+    },
+    {
+     "name": "rise",
+     "label": "Max rise (s)",
+     "min": 0.002,
+     "max": 0.2,
+     "default": 0.05,
+     "step": 0.002
+    },
+    {
+     "name": "sus",
+     "label": "Max sustain (s)",
+     "min": 0,
+     "max": 0.2,
+     "default": 0.05,
+     "step": 0.005
+    },
+    {
+     "name": "decay",
+     "label": "Max decay (s)",
+     "min": 0.02,
+     "max": 2,
+     "default": 0.5,
+     "step": 0.01
+    },
+    {
+     "name": "speed",
+     "label": "Spacing (s)",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.15,
+     "step": 0.01
+    },
+    {
+     "name": "scatter",
+     "label": "Time scatter",
+     "min": 0,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "pscat",
+     "label": "Pitch jitter (st)",
+     "min": 0,
+     "max": 1,
+     "default": 0,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "pulser.pitched",
+   "label": "Pitched pulses",
+   "category": "Texture",
+   "program": "pulser",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 0.5,
+     "max": 20,
+     "default": 4,
+     "step": 0.5
+    },
+    {
+     "name": "pitch",
+     "label": "Pitch (MIDI)",
+     "min": 24,
+     "max": 96,
+     "default": 60,
+     "step": 1
+    },
+    {
+     "name": "rise",
+     "label": "Max rise (s)",
+     "min": 0.002,
+     "max": 0.2,
+     "default": 0.05,
+     "step": 0.002
+    },
+    {
+     "name": "sus",
+     "label": "Max sustain (s)",
+     "min": 0,
+     "max": 0.2,
+     "default": 0.05,
+     "step": 0.005
+    },
+    {
+     "name": "decay",
+     "label": "Max decay (s)",
+     "min": 0.02,
+     "max": 2,
+     "default": 0.5,
+     "step": 0.01
+    },
+    {
+     "name": "speed",
+     "label": "Spacing (s)",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.15,
+     "step": 0.01
+    },
+    {
+     "name": "scatter",
+     "label": "Time scatter",
+     "min": 0,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "pscat",
+     "label": "Pitch jitter (st)",
+     "min": 0,
+     "max": 1,
+     "default": 0,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "quirk.power",
+   "label": "Power distort",
+   "category": "Waveset distortion",
+   "program": "quirk",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "powfac",
+     "label": "Power",
+     "min": 0.05,
+     "max": 10,
+     "default": 0.4,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "rejoin.rejoin",
+   "label": "Rejoin segments",
+   "category": "Extend & segment",
+   "program": "rejoin",
+   "domain": "sound",
+   "unsupported": "needs a segment file, not plain audio",
+   "params": [
+    {
+     "name": "gain",
+     "label": "Gain",
+     "min": 0.05,
+     "max": 1,
+     "default": 1,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "repeater.bounce",
+   "label": "Bouncing repeat",
+   "category": "Extend & segment",
+   "program": "repeater",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "seg",
+     "label": "Segment (s)",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "repcnt",
+     "label": "Repeats",
+     "min": 2,
+     "max": 32,
+     "default": 8,
+     "step": 1
+    },
+    {
+     "name": "delay",
+     "label": "Initial gap (s)",
+     "min": 0.02,
+     "max": 0.5,
+     "default": 0.12,
+     "step": 0.01
+    },
+    {
+     "name": "accel",
+     "label": "Acceleration",
+     "min": 1,
+     "max": 4,
+     "default": 2,
+     "step": 0.1
+    },
+    {
+     "name": "warp",
+     "label": "Warp",
+     "min": 0.5,
+     "max": 3,
+     "default": 1,
+     "step": 0.1
+    },
+    {
+     "name": "fade",
+     "label": "Decay",
+     "min": 0.5,
+     "max": 3,
+     "default": 1,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "repitch.transpose",
+   "label": "Transpose spectrum",
+   "category": "Spectral pitch",
+   "program": "repitch",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "semitones",
+     "label": "Semitones",
+     "min": -24,
+     "max": 24,
+     "default": 5,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "repitch.quantise",
+   "label": "Quantise pitch (autotune)",
+   "category": "Pitch-data",
+   "program": "repitch",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "root",
+     "label": "Key root (MIDI)",
+     "min": 48,
+     "max": 71,
+     "default": 60,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "repitch.smooth",
+   "label": "Smooth pitch (de-vibrato)",
+   "category": "Pitch-data",
+   "program": "repitch",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "timeframe",
+     "label": "Smooth (ms)",
+     "min": 10,
+     "max": 1000,
+     "default": 200,
+     "step": 10
+    }
+   ]
+  },
+  {
+   "id": "repitch.invert",
+   "label": "Invert pitch contour",
+   "category": "Pitch-data",
+   "program": "repitch",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "mean",
+     "label": "Pivot (MIDI)",
+     "min": 36,
+     "max": 84,
+     "default": 60,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "retime.speed",
+   "label": "Respeed events",
+   "category": "Extend & segment",
+   "program": "retime",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "factor",
+     "label": "Speed ×",
+     "min": 0.25,
+     "max": 4,
+     "default": 2,
+     "step": 0.25
+    },
+    {
+     "name": "minsil",
+     "label": "Min gap (ms)",
+     "min": 5,
+     "max": 200,
+     "default": 20,
+     "step": 5
+    }
+   ]
+  },
+  {
+   "id": "reverb.reverb",
+   "label": "Reverb",
+   "category": "Delay & reverb",
+   "program": "reverb",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "chans",
+     "label": "Out channels",
+     "min": 1,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "rgain",
+     "label": "Reverb level",
+     "min": 0,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "mix",
+     "label": "Dry/wet",
+     "min": 0,
+     "max": 0.95,
+     "default": 0.4,
+     "step": 0.05
+    },
+    {
+     "name": "rvbtime",
+     "label": "Decay (s)",
+     "min": 0.1,
+     "max": 10,
+     "default": 1.5,
+     "step": 0.1
+    },
+    {
+     "name": "absorb",
+     "label": "HF damping",
+     "min": 0,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "lpfreq",
+     "label": "Input LP (Hz)",
+     "min": 0,
+     "max": 14000,
+     "default": 8000,
+     "step": 100
+    },
+    {
+     "name": "trtime",
+     "label": "Tail (s)",
+     "min": 0,
+     "max": 5,
+     "default": 0.5,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "reverb.room",
+   "label": "Room reverb",
+   "category": "Delay & reverb",
+   "program": "rmverb",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "chans",
+     "label": "Out channels",
+     "min": 1,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "rmsize",
+     "label": "Room size",
+     "min": 1,
+     "max": 3,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "rgain",
+     "label": "Reverb level",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "mix",
+     "label": "Dry/wet",
+     "min": 0,
+     "max": 1,
+     "default": 0.4,
+     "step": 0.05
+    },
+    {
+     "name": "fback",
+     "label": "Feedback",
+     "min": 0,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "absorb",
+     "label": "Absorb (Hz)",
+     "min": 500,
+     "max": 8000,
+     "default": 3000,
+     "step": 100
+    },
+    {
+     "name": "lpfreq",
+     "label": "Input LP (Hz)",
+     "min": 0,
+     "max": 15000,
+     "default": 8000,
+     "step": 100
+    },
+    {
+     "name": "trtime",
+     "label": "Tail (s)",
+     "min": 0,
+     "max": 5,
+     "default": 0.5,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "rotor.rotor",
+   "label": "Rotor (note-set cycles)",
+   "category": "Texture",
+   "program": "rotor",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 1,
+     "max": 20,
+     "default": 6,
+     "step": 0.5
+    },
+    {
+     "name": "cnt",
+     "label": "Events per set",
+     "min": 3,
+     "max": 24,
+     "default": 7,
+     "step": 1
+    },
+    {
+     "name": "minp",
+     "label": "Min pitch (MIDI)",
+     "min": 24,
+     "max": 48,
+     "default": 48,
+     "step": 1
+    },
+    {
+     "name": "maxp",
+     "label": "Max pitch (MIDI)",
+     "min": 72,
+     "max": 96,
+     "default": 72,
+     "step": 1
+    },
+    {
+     "name": "step",
+     "label": "Max gap (s)",
+     "min": 0.02,
+     "max": 1,
+     "default": 0.1,
+     "step": 0.01
+    },
+    {
+     "name": "prot",
+     "label": "Pitch cycle (sets)",
+     "min": 4,
+     "max": 64,
+     "default": 16,
+     "step": 1
+    },
+    {
+     "name": "trot",
+     "label": "Speed cycle (sets)",
+     "min": 4,
+     "max": 64,
+     "default": 12,
+     "step": 1
+    },
+    {
+     "name": "phas",
+     "label": "Cycle offset",
+     "min": 0,
+     "max": 1,
+     "default": 0,
+     "step": 0.05
+    },
+    {
+     "name": "attack",
+     "label": "Event attack (s)",
+     "min": 0.005,
+     "max": 0.5,
+     "default": 0.03,
+     "step": 0.005
+    },
+    {
+     "name": "decay",
+     "label": "Event decay (s)",
+     "min": 0.05,
+     "max": 2,
+     "default": 0.35,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "scramble.scramble",
+   "label": "Waveset scramble",
+   "category": "Waveset distortion",
+   "program": "scramble",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 1,
+     "max": 10,
+     "default": 3,
+     "step": 0.5
+    }
+   ]
+  },
+  {
+   "id": "selfsim.selfsim",
+   "label": "Self-similarity",
+   "category": "Spectral",
+   "program": "selfsim",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "index",
+     "label": "Similarity index",
+     "min": 1,
+     "max": 20,
+     "default": 2,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "sfecho.echo",
+   "label": "Echoes",
+   "category": "Delay & reverb",
+   "program": "sfecho",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "delay",
+     "label": "Delay (s)",
+     "min": 0.5,
+     "max": 10,
+     "default": 3,
+     "step": 0.5
+    },
+    {
+     "name": "atten",
+     "label": "Decay",
+     "min": 0.1,
+     "max": 0.95,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "dur",
+     "label": "Max length (s)",
+     "min": 4,
+     "max": 30,
+     "default": 12,
+     "step": 1
+    },
+    {
+     "name": "rand",
+     "label": "Time scatter",
+     "min": 0,
+     "max": 1,
+     "default": 0,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "shifter.cycles",
+   "label": "Shifting cycles",
+   "category": "Extend & segment",
+   "program": "shifter",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "cycle1",
+     "label": "Cycle 1 (beats)",
+     "min": 2,
+     "max": 16,
+     "default": 3,
+     "step": 1
+    },
+    {
+     "name": "cycle2",
+     "label": "Cycle 2 (beats)",
+     "min": 2,
+     "max": 16,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "cycle3",
+     "label": "Cycle 3 (beats)",
+     "min": 2,
+     "max": 16,
+     "default": 5,
+     "step": 1
+    },
+    {
+     "name": "cycdur",
+     "label": "Cycle time (s)",
+     "min": 0.5,
+     "max": 8,
+     "default": 2,
+     "step": 0.1
+    },
+    {
+     "name": "dur",
+     "label": "Length (s)",
+     "min": 1,
+     "max": 30,
+     "default": 8,
+     "step": 0.5
+    },
+    {
+     "name": "ochans",
+     "label": "Out channels",
+     "min": 1,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "subdiv",
+     "label": "Subdivision",
+     "min": 4,
+     "max": 12,
+     "default": 6,
+     "step": 2
+    },
+    {
+     "name": "linger",
+     "label": "Linger (cycles)",
+     "min": 0,
+     "max": 8,
+     "default": 1,
+     "step": 1
+    },
+    {
+     "name": "transit",
+     "label": "Transition (cycles)",
+     "min": 1,
+     "max": 8,
+     "default": 1,
+     "step": 1
+    },
+    {
+     "name": "boost",
+     "label": "Boost",
+     "min": 0,
+     "max": 4,
+     "default": 1,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "shrink.shrink",
+   "label": "Shrinking repeats",
+   "category": "Extend & segment",
+   "program": "shrink",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "shrinkage",
+     "label": "Shrink ×",
+     "min": 0.3,
+     "max": 0.85,
+     "default": 0.8,
+     "step": 0.05
+    },
+    {
+     "name": "gap",
+     "label": "Gap (s)",
+     "min": 0.5,
+     "max": 10,
+     "default": 3,
+     "step": 0.1
+    },
+    {
+     "name": "contract",
+     "label": "Closing up",
+     "min": 0.85,
+     "max": 1,
+     "default": 0.9,
+     "step": 0.01
+    },
+    {
+     "name": "dur",
+     "label": "Output (s)",
+     "min": 4,
+     "max": 30,
+     "default": 10,
+     "step": 0.5
+    },
+    {
+     "name": "splice",
+     "label": "Splice (ms)",
+     "min": 5,
+     "max": 50,
+     "default": 15,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "specenv.replace",
+   "label": "Envelope transfer",
+   "category": "Formants",
+   "program": "specenv",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "windowsize",
+     "label": "Window (channels)",
+     "min": 1,
+     "max": 100,
+     "default": 15,
+     "step": 1
+    },
+    {
+     "name": "bal",
+     "label": "Keep original",
+     "min": 0,
+     "max": 0.95,
+     "default": 0,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "specfnu.narrow",
+   "label": "Narrow formants",
+   "category": "Spectral",
+   "program": "specfnu",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "narrow",
+     "label": "Narrowing",
+     "min": 1,
+     "max": 100,
+     "default": 5,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "specfnu.vibrate",
+   "label": "Invert formants",
+   "category": "Spectral",
+   "program": "specfnu",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "vibrate",
+     "label": "Vibrate (Hz)",
+     "min": 0,
+     "max": 20,
+     "default": 2,
+     "step": 0.5
+    }
+   ]
+  },
+  {
+   "id": "specfnu.transpose",
+   "label": "Transpose (keep formants)",
+   "category": "Spectral pitch",
+   "program": "specfnu",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "semitones",
+     "label": "Semitones",
+     "min": -48,
+     "max": 48,
+     "default": 5,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "specfold.fold",
+   "label": "Spectral fold",
+   "category": "Spectral",
+   "program": "specfold",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "stt",
+     "label": "Start channel",
+     "min": 1,
+     "max": 256,
+     "default": 1,
+     "step": 1
+    },
+    {
+     "name": "len",
+     "label": "Channels",
+     "min": 4,
+     "max": 256,
+     "default": 64,
+     "step": 2
+    },
+    {
+     "name": "cnt",
+     "label": "Folds",
+     "min": 1,
+     "max": 32,
+     "default": 8,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "specfold.randomise",
+   "label": "Scramble spectral channels",
+   "category": "Spectral",
+   "program": "specfold",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "stt",
+     "label": "Start channel",
+     "min": 1,
+     "max": 256,
+     "default": 1,
+     "step": 1
+    },
+    {
+     "name": "len",
+     "label": "Channels",
+     "min": 4,
+     "max": 256,
+     "default": 128,
+     "step": 1
+    },
+    {
+     "name": "seed",
+     "label": "Seed",
+     "min": 1,
+     "max": 64,
+     "default": 1,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "speclean.clean",
+   "label": "Spectral denoise",
+   "category": "Combine",
+   "program": "speclean",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "persist",
+     "label": "Persist (s)",
+     "min": 0.003,
+     "max": 1,
+     "default": 0.05,
+     "step": 0.001
+    },
+    {
+     "name": "noisgain",
+     "label": "Noise gain",
+     "min": 1,
+     "max": 40,
+     "default": 2,
+     "step": 0.5
+    }
+   ]
+  },
+  {
+   "id": "specnu.rand",
+   "label": "Randomise window order",
+   "category": "Spectral",
+   "program": "specnu",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "grouping",
+     "label": "Grouping",
+     "min": 1,
+     "max": 32,
+     "default": 1,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "specnu.squeeze",
+   "label": "Spectral squeeze",
+   "category": "Spectral",
+   "program": "specnu",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "centrefrq",
+     "label": "Centre (Hz)",
+     "min": 20,
+     "max": 8000,
+     "default": 500,
+     "step": 10
+    },
+    {
+     "name": "squeeze",
+     "label": "Squeeze",
+     "min": 0.05,
+     "max": 0.95,
+     "default": 0.5,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "specnu.remove",
+   "label": "Remove a pitch",
+   "category": "Spectral",
+   "program": "specnu",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "midimin",
+     "label": "Low pitch (MIDI)",
+     "min": 0,
+     "max": 127,
+     "default": 56,
+     "step": 1
+    },
+    {
+     "name": "midimax",
+     "label": "High pitch (MIDI)",
+     "min": 0,
+     "max": 127,
+     "default": 58,
+     "step": 1
+    },
+    {
+     "name": "rangetop",
+     "label": "Search top (Hz)",
+     "min": 1000,
+     "max": 16000,
+     "default": 4000,
+     "step": 100
+    },
+    {
+     "name": "atten",
+     "label": "Attenuation",
+     "min": 0.1,
+     "max": 1,
+     "default": 1,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "specross.partials",
+   "label": "Partial cross",
+   "category": "Morph",
+   "program": "specross",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "tuning",
+     "label": "Tuning (semitones)",
+     "min": 0.1,
+     "max": 6,
+     "default": 2,
+     "step": 0.1
+    },
+    {
+     "name": "minwin",
+     "label": "Min windows",
+     "min": 1,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "signois",
+     "label": "Signal/noise (dB)",
+     "min": 20,
+     "max": 100,
+     "default": 80,
+     "step": 1
+    },
+    {
+     "name": "harmcnt",
+     "label": "Harmonics needed",
+     "min": 1,
+     "max": 8,
+     "default": 3,
+     "step": 1
+    },
+    {
+     "name": "lo",
+     "label": "Lowest pitch (Hz)",
+     "min": 10,
+     "max": 1000,
+     "default": 10,
+     "step": 1
+    },
+    {
+     "name": "hi",
+     "label": "Highest pitch (Hz)",
+     "min": 100,
+     "max": 2756,
+     "default": 2756,
+     "step": 1
+    },
+    {
+     "name": "thresh",
+     "label": "Partial threshold",
+     "min": 0,
+     "max": 0.5,
+     "default": 0.01,
+     "step": 0.01
+    },
+    {
+     "name": "level",
+     "label": "Level",
+     "min": 0.1,
+     "max": 1,
+     "default": 1,
+     "step": 0.1
+    },
+    {
+     "name": "interp",
+     "label": "Interpolation",
+     "min": 0,
+     "max": 1,
+     "default": 1,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "specsphinx.impose",
+   "label": "Amplitude transplant",
+   "category": "Combine",
+   "program": "specsphinx",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "ampbalance",
+     "label": "Keep own amps",
+     "min": 0,
+     "max": 1,
+     "default": 0,
+     "step": 0.05
+    },
+    {
+     "name": "frqbalance",
+     "label": "Inject 2nd frqs",
+     "min": 0,
+     "max": 1,
+     "default": 0,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "specsphinx.multiply",
+   "label": "Spectral multiply",
+   "category": "Combine",
+   "program": "specsphinx",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "bias",
+     "label": "Bias to 1st",
+     "min": 0,
+     "max": 0.95,
+     "default": 0,
+     "step": 0.05
+    },
+    {
+     "name": "gain",
+     "label": "Gain",
+     "min": 0.1,
+     "max": 10,
+     "default": 1,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "spectstr.stretch",
+   "label": "Time stretch (smooth)",
+   "category": "Pitch & time",
+   "program": "spectstr",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "stretch",
+     "label": "Stretch ×",
+     "min": 0.25,
+     "max": 8,
+     "default": 2,
+     "step": 0.25
+    },
+    {
+     "name": "dratio",
+     "label": "Discohere amount",
+     "min": 0,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "dirand",
+     "label": "Discohere random",
+     "min": 0,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "spectune.nearest",
+   "label": "Auto-tune (nearest note)",
+   "category": "Spectral pitch",
+   "program": "spectune",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "match",
+     "label": "Partials to match",
+     "min": 1,
+     "max": 8,
+     "default": 5,
+     "step": 1
+    },
+    {
+     "name": "intune",
+     "label": "Tolerance (semitones)",
+     "min": 0.1,
+     "max": 3,
+     "default": 1,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "spectwin.hybrid",
+   "label": "Spectral twin",
+   "category": "Formants",
+   "program": "spectwin",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "mode",
+     "label": "Envelope",
+     "choices": [
+      [
+       "Formant envelopes",
+       "1"
+      ],
+      [
+       "Whole envelopes",
+       "4"
+      ]
+     ]
+    },
+    {
+     "name": "frqint",
+     "label": "Frqs from 2nd",
+     "min": 0,
+     "max": 1,
+     "default": 1,
+     "step": 0.05
+    },
+    {
+     "name": "envint",
+     "label": "Envelope from 2nd",
+     "min": 0,
+     "max": 1,
+     "default": 1,
+     "step": 0.05
+    },
+    {
+     "name": "dupl",
+     "label": "Duplications",
+     "min": 0,
+     "max": 8,
+     "default": 0,
+     "step": 1
+    },
+    {
+     "name": "step",
+     "label": "Dup step (semitones)",
+     "min": 0,
+     "max": 24,
+     "default": 12,
+     "step": 1
+    },
+    {
+     "name": "dec",
+     "label": "Dup level",
+     "min": 0.1,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "spike.spike",
+   "label": "Spike envelope",
+   "category": "Envelope",
+   "program": "spike",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "peak",
+     "label": "Peak time (s)",
+     "min": 0.05,
+     "max": 10,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "upslope",
+     "label": "Attack curve",
+     "min": 1,
+     "max": 100,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "downslope",
+     "label": "Decay curve",
+     "min": 1,
+     "max": 100,
+     "default": 4,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "spin.stereo",
+   "label": "Spin stereo image",
+   "category": "Spatialisation",
+   "program": "spin",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "rate",
+     "label": "Rate (cps)",
+     "min": -4,
+     "max": 4,
+     "default": 1,
+     "step": 0.25
+    }
+   ]
+  },
+  {
+   "id": "splinter.into",
+   "label": "Splinter into",
+   "category": "Extend & segment",
+   "program": "splinter",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "target",
+     "label": "Grab at (s)",
+     "min": 0.02,
+     "max": 10,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "wcnt",
+     "label": "Wavesets",
+     "min": 1,
+     "max": 30,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "shrcnt",
+     "label": "Shrink steps",
+     "min": 2,
+     "max": 60,
+     "default": 12,
+     "step": 1
+    },
+    {
+     "name": "ocnt",
+     "label": "Extra splinters",
+     "min": 0,
+     "max": 30,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "p1",
+     "label": "Start pulse (Hz)",
+     "min": 0,
+     "max": 50,
+     "default": 0,
+     "step": 1
+    },
+    {
+     "name": "p2",
+     "label": "End pulse (Hz)",
+     "min": 0,
+     "max": 50,
+     "default": 30,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "splinter.outof",
+   "label": "Splinter away",
+   "category": "Extend & segment",
+   "program": "splinter",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "target",
+     "label": "Shatter at (s)",
+     "min": 0.02,
+     "max": 10,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "wcnt",
+     "label": "Wavesets",
+     "min": 1,
+     "max": 30,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "shrcnt",
+     "label": "Shrink steps",
+     "min": 2,
+     "max": 60,
+     "default": 12,
+     "step": 1
+    },
+    {
+     "name": "ocnt",
+     "label": "Extra splinters",
+     "min": 0,
+     "max": 30,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "p1",
+     "label": "Start pulse (Hz)",
+     "min": 0,
+     "max": 50,
+     "default": 0,
+     "step": 1
+    },
+    {
+     "name": "p2",
+     "label": "End pulse (Hz)",
+     "min": 0,
+     "max": 50,
+     "default": 30,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "strange.shift",
+   "label": "Frequency shift",
+   "category": "Spectral",
+   "program": "strange",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "frqshift",
+     "label": "Shift (Hz)",
+     "min": -500,
+     "max": 500,
+     "default": 100,
+     "step": 10
+    }
+   ]
+  },
+  {
+   "id": "strange.waver",
+   "label": "Waver (in/harmonic)",
+   "category": "Spectral",
+   "program": "strange",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "vibfrq",
+     "label": "Rate (Hz)",
+     "min": 0.1,
+     "max": 20,
+     "default": 5,
+     "step": 0.1
+    },
+    {
+     "name": "stretch",
+     "label": "Max stretch",
+     "min": 1,
+     "max": 4,
+     "default": 2,
+     "step": 0.1
+    },
+    {
+     "name": "botfrq",
+     "label": "Above (Hz)",
+     "min": 20,
+     "max": 2000,
+     "default": 200,
+     "step": 10
+    }
+   ]
+  },
+  {
+   "id": "strange.invert",
+   "label": "Spectral invert",
+   "category": "Spectral",
+   "program": "strange",
+   "domain": "spectral",
+   "params": []
+  },
+  {
+   "id": "strange.glis",
+   "label": "Spectral glissando",
+   "category": "Spectral",
+   "program": "strange",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "glisrate",
+     "label": "Glide (semitones/s)",
+     "min": -12,
+     "max": 12,
+     "default": 3,
+     "step": 0.5
+    }
+   ]
+  },
+  {
+   "id": "strans.accel",
+   "label": "Accelerando",
+   "category": "Pitch & time",
+   "program": "strans",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "accel",
+     "label": "Goal speed ×",
+     "min": 0.25,
+     "max": 4,
+     "default": 2,
+     "step": 0.25
+    },
+    {
+     "name": "goaltime",
+     "label": "Goal at (s)",
+     "min": 0.1,
+     "max": 10,
+     "default": 1,
+     "step": 0.1
+    },
+    {
+     "name": "starttime",
+     "label": "Start at (s)",
+     "min": 0,
+     "max": 5,
+     "default": 0,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "strans.vibrato",
+   "label": "Vibrato",
+   "category": "Pitch & time",
+   "program": "strans",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "vibfrq",
+     "label": "Rate (Hz)",
+     "min": 0.1,
+     "max": 20,
+     "default": 6,
+     "step": 0.1
+    },
+    {
+     "name": "vibdepth",
+     "label": "Depth (semitones)",
+     "min": 0.1,
+     "max": 12,
+     "default": 1,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "stretch.time",
+   "label": "Time stretch",
+   "category": "Pitch & time",
+   "program": "stretch",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "factor",
+     "label": "Stretch ×",
+     "min": 0.25,
+     "max": 8,
+     "default": 2,
+     "step": 0.25
+    }
+   ]
+  },
+  {
+   "id": "stretch.spectrum",
+   "label": "Spectral stretch",
+   "category": "Spectral",
+   "program": "stretch",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "divide",
+     "label": "Divide (Hz)",
+     "min": 100,
+     "max": 8000,
+     "default": 1000,
+     "step": 50
+    },
+    {
+     "name": "stretch",
+     "label": "Stretch ×",
+     "min": 0.25,
+     "max": 4,
+     "default": 2,
+     "step": 0.25
+    }
+   ]
+  },
+  {
+   "id": "stutter.stutter",
+   "label": "Stutter",
+   "category": "Extend & segment",
+   "program": "stutter",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "slices",
+     "label": "Elements",
+     "min": 2,
+     "max": 6,
+     "default": 3,
+     "step": 1
+    },
+    {
+     "name": "interval",
+     "label": "Slice every (s)",
+     "min": 0.1,
+     "max": 0.4,
+     "default": 0.25,
+     "step": 0.05
+    },
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 1,
+     "max": 10,
+     "default": 4,
+     "step": 0.5
+    },
+    {
+     "name": "segjoins",
+     "label": "Join up to",
+     "min": 1,
+     "max": 3,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "silprop",
+     "label": "Silence prop.",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "silmin",
+     "label": "Min silence (s)",
+     "min": 0.01,
+     "max": 0.2,
+     "default": 0.05,
+     "step": 0.01
+    },
+    {
+     "name": "silmax",
+     "label": "Max silence (s)",
+     "min": 0.2,
+     "max": 0.6,
+     "default": 0.2,
+     "step": 0.05
+    },
+    {
+     "name": "trans",
+     "label": "Transpose range",
+     "min": 0,
+     "max": 3,
+     "default": 2,
+     "step": 0.5
+    },
+    {
+     "name": "seed",
+     "label": "Seed",
+     "min": 1,
+     "max": 100,
+     "default": 1,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "submix.merge",
+   "label": "Mix two sounds",
+   "category": "Mix",
+   "program": "submix",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "stagger",
+     "label": "2nd entry (s)",
+     "min": 0,
+     "max": 4,
+     "default": 0,
+     "step": 0.1
+    },
+    {
+     "name": "skew",
+     "label": "1st:2nd gain",
+     "min": 0.1,
+     "max": 10,
+     "default": 1,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "submix.interleave",
+   "label": "Join channels (interleave)",
+   "category": "Mix",
+   "program": "submix",
+   "domain": "sound",
+   "params": []
+  },
+  {
+   "id": "subtract.subtract",
+   "label": "Subtract signal",
+   "category": "Combine",
+   "program": "subtract",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "chan",
+     "label": "Channel",
+     "min": 1,
+     "max": 8,
+     "default": 1,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "superaccu.superaccu",
+   "label": "Super accumulate",
+   "category": "Spectral",
+   "program": "superaccu",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "decay",
+     "label": "Decay /s",
+     "min": 0.05,
+     "max": 0.9,
+     "default": 0.3,
+     "step": 0.05
+    },
+    {
+     "name": "glis",
+     "label": "Glissando",
+     "min": -11.7,
+     "max": 11.7,
+     "default": 0,
+     "step": 0.1
+    }
+   ]
+  },
+  {
+   "id": "suppress.partials",
+   "label": "Suppress partials",
+   "category": "Spectral",
+   "program": "suppress",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "lofrq",
+     "label": "Low (Hz)",
+     "min": 20,
+     "max": 10000,
+     "default": 100,
+     "step": 10
+    },
+    {
+     "name": "hifrq",
+     "label": "High (Hz)",
+     "min": 50,
+     "max": 20000,
+     "default": 4000,
+     "step": 50
+    },
+    {
+     "name": "chancnt",
+     "label": "Count",
+     "min": 1,
+     "max": 64,
+     "default": 8,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "tangent.tangent",
+   "label": "Tangent motion (8ch)",
+   "category": "Spatialisation",
+   "program": "tangent",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 6,
+     "max": 30,
+     "default": 8,
+     "step": 1
+    },
+    {
+     "name": "steps",
+     "label": "Events",
+     "min": 2,
+     "max": 64,
+     "default": 8,
+     "step": 1
+    },
+    {
+     "name": "maxangle",
+     "label": "Max angle (°)",
+     "min": 90,
+     "max": 135,
+     "default": 120,
+     "step": 1
+    },
+    {
+     "name": "decay",
+     "label": "Event decay",
+     "min": 0.1,
+     "max": 0.99,
+     "default": 0.9,
+     "step": 0.01
+    }
+   ]
+  },
+  {
+   "id": "tesselate.tesselate",
+   "label": "Tesselate (phase pattern)",
+   "category": "Spatialisation",
+   "program": "tesselate",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "chans",
+     "label": "Out channels",
+     "min": 2,
+     "max": 8,
+     "default": 2,
+     "step": 2
+    },
+    {
+     "name": "cycledur",
+     "label": "Cycle (s)",
+     "min": 0.1,
+     "max": 4,
+     "default": 0.5,
+     "step": 0.05
+    },
+    {
+     "name": "outdur",
+     "label": "Duration (s)",
+     "min": 1,
+     "max": 20,
+     "default": 6,
+     "step": 0.5
+    },
+    {
+     "name": "repeats",
+     "label": "Drift cycles",
+     "min": 2,
+     "max": 32,
+     "default": 5,
+     "step": 1
+    },
+    {
+     "name": "type",
+     "label": "Drift pairing",
+     "min": 0,
+     "max": 3,
+     "default": 0,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "texture.simple",
+   "label": "Texture (event cloud)",
+   "category": "Texture",
+   "program": "texture",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "outdur",
+     "label": "Duration (s)",
+     "min": 1,
+     "max": 10,
+     "default": 3,
+     "step": 0.5
+    },
+    {
+     "name": "packing",
+     "label": "Density (s)",
+     "min": 0.02,
+     "max": 1,
+     "default": 0.2,
+     "step": 0.02
+    },
+    {
+     "name": "scatter",
+     "label": "Scatter",
+     "min": 0,
+     "max": 10,
+     "default": 1,
+     "step": 0.5
+    },
+    {
+     "name": "mindur",
+     "label": "Min event (s)",
+     "min": 0.05,
+     "max": 2,
+     "default": 0.2,
+     "step": 0.05
+    },
+    {
+     "name": "maxdur",
+     "label": "Max event (s)",
+     "min": 0.05,
+     "max": 2,
+     "default": 0.4,
+     "step": 0.05
+    },
+    {
+     "name": "minpich",
+     "label": "Min pitch (MIDI)",
+     "min": 24,
+     "max": 96,
+     "default": 48,
+     "step": 1
+    },
+    {
+     "name": "maxpich",
+     "label": "Max pitch (MIDI)",
+     "min": 24,
+     "max": 96,
+     "default": 72,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "transit.transit",
+   "label": "Transit motion (8ch)",
+   "category": "Spatialisation",
+   "program": "transit",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "mode",
+     "label": "Path",
+     "min": 1,
+     "max": 5,
+     "default": 3,
+     "step": 1
+    },
+    {
+     "name": "focus",
+     "label": "Focus speaker",
+     "min": 1,
+     "max": 8,
+     "default": 1,
+     "step": 1
+    },
+    {
+     "name": "dur",
+     "label": "Duration (s)",
+     "min": 6,
+     "max": 30,
+     "default": 8,
+     "step": 1
+    },
+    {
+     "name": "steps",
+     "label": "Events",
+     "min": 2,
+     "max": 64,
+     "default": 8,
+     "step": 1
+    },
+    {
+     "name": "maxangle",
+     "label": "Max angle (°)",
+     "min": 45,
+     "max": 89,
+     "default": 80,
+     "step": 1
+    },
+    {
+     "name": "decay",
+     "label": "Event decay",
+     "min": 0.1,
+     "max": 0.99,
+     "default": 0.9,
+     "step": 0.01
+    }
+   ]
+  },
+  {
+   "id": "tremenv.tremenv",
+   "label": "Tremolo (narrowing)",
+   "category": "Envelope",
+   "program": "tremenv",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "frq",
+     "label": "Rate (Hz)",
+     "min": 0.1,
+     "max": 30,
+     "default": 5,
+     "step": 0.1
+    },
+    {
+     "name": "depth",
+     "label": "Depth",
+     "min": 0,
+     "max": 1,
+     "default": 0.8,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "tremolo.tremolo",
+   "label": "Tremolo",
+   "category": "Envelope",
+   "program": "tremolo",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "frq",
+     "label": "Rate (Hz)",
+     "min": 0.1,
+     "max": 20,
+     "default": 6,
+     "step": 0.1
+    },
+    {
+     "name": "depth",
+     "label": "Depth",
+     "min": 0,
+     "max": 1,
+     "default": 0.7,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "tunevary.chord",
+   "label": "Tune to chord",
+   "category": "Spectral pitch",
+   "program": "tunevary",
+   "domain": "spectral",
+   "params": [
+    {
+     "name": "pitch1",
+     "label": "Note 1 (MIDI)",
+     "min": 24,
+     "max": 96,
+     "default": 48,
+     "step": 1
+    },
+    {
+     "name": "pitch2",
+     "label": "Note 2 (MIDI)",
+     "min": 24,
+     "max": 96,
+     "default": 55,
+     "step": 1
+    },
+    {
+     "name": "pitch3",
+     "label": "Note 3 (MIDI)",
+     "min": 24,
+     "max": 96,
+     "default": 64,
+     "step": 1
+    },
+    {
+     "name": "focus",
+     "label": "Focus",
+     "min": 0,
+     "max": 1,
+     "default": 1,
+     "step": 0.05
+    },
+    {
+     "name": "clarity",
+     "label": "Clarity",
+     "min": 0,
+     "max": 1,
+     "default": 0,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "tweet.tweet",
+   "label": "Tweets",
+   "category": "Pitch-sync grains",
+   "program": "tweet",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "minlevel",
+     "label": "Min level (dB)",
+     "min": -60,
+     "max": 0,
+     "default": 0,
+     "step": 1
+    },
+    {
+     "name": "pkcnt",
+     "label": "Peaks",
+     "min": 1,
+     "max": 200,
+     "default": 30,
+     "step": 1
+    },
+    {
+     "name": "chirp",
+     "label": "Chirp",
+     "min": 0,
+     "max": 30,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "pitch",
+     "label": "Pitch hint (Hz)",
+     "min": 50,
+     "max": 2000,
+     "default": 220,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "tweet.noise",
+   "label": "Pulses to noise",
+   "category": "Pitch-sync grains",
+   "program": "tweet",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "minlevel",
+     "label": "Min level (dB)",
+     "min": -60,
+     "max": 0,
+     "default": 0,
+     "step": 1
+    },
+    {
+     "name": "pitch",
+     "label": "Pitch hint (Hz)",
+     "min": 50,
+     "max": 2000,
+     "default": 220,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "verges.verges",
+   "label": "Verge glisses",
+   "category": "Pitch & time",
+   "program": "verges",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "count",
+     "label": "Verges",
+     "min": 1,
+     "max": 3,
+     "default": 3,
+     "step": 1
+    },
+    {
+     "name": "spacing",
+     "label": "Every (s)",
+     "min": 0.2,
+     "max": 0.6,
+     "default": 0.25,
+     "step": 0.05
+    },
+    {
+     "name": "transp",
+     "label": "Gliss from (st)",
+     "min": -12,
+     "max": 12,
+     "default": 5,
+     "step": 1
+    },
+    {
+     "name": "exp",
+     "label": "Slope",
+     "min": 1,
+     "max": 8,
+     "default": 1,
+     "step": 0.5
+    },
+    {
+     "name": "dur",
+     "label": "Gliss (ms)",
+     "min": 30,
+     "max": 150,
+     "default": 100,
+     "step": 10
+    }
+   ]
+  },
+  {
+   "id": "waveform.make",
+   "label": "Make wavetable",
+   "category": "Synthesis",
+   "program": "waveform",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "time",
+     "label": "Cut at (s)",
+     "min": 0,
+     "max": 60,
+     "default": 0,
+     "step": 0.01
+    },
+    {
+     "name": "dur",
+     "label": "Segment (ms)",
+     "min": 1,
+     "max": 500,
+     "default": 50,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "waveform.halfwaves",
+   "label": "Wavetable (half-wavesets)",
+   "category": "Synthesis",
+   "program": "waveform",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "time",
+     "label": "Cut at (s)",
+     "min": 0,
+     "max": 60,
+     "default": 0,
+     "step": 0.01
+    },
+    {
+     "name": "cnt",
+     "label": "Half-wavesets",
+     "min": 1,
+     "max": 64,
+     "default": 4,
+     "step": 1
+    }
+   ]
+  },
+  {
+   "id": "waveform.sinemix",
+   "label": "Wavetable + sine",
+   "category": "Synthesis",
+   "program": "waveform",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "time",
+     "label": "Cut at (s)",
+     "min": 0,
+     "max": 60,
+     "default": 0,
+     "step": 0.01
+    },
+    {
+     "name": "dur",
+     "label": "Segment (ms)",
+     "min": 1,
+     "max": 500,
+     "default": 50,
+     "step": 1
+    },
+    {
+     "name": "balance",
+     "label": "Source/sine",
+     "min": 0.05,
+     "max": 1,
+     "default": 0.5,
+     "step": 0.05
+    }
+   ]
+  },
+  {
+   "id": "wrappage.wrappage",
+   "label": "Wrappage (spatial brassage)",
+   "category": "Granular",
+   "program": "wrappage",
+   "domain": "sound",
+   "params": [
+    {
+     "name": "chans",
+     "label": "Out channels",
+     "min": 2,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "spread",
+     "label": "Spread (chans)",
+     "min": 0,
+     "max": 8,
+     "default": 2,
+     "step": 1
+    },
+    {
+     "name": "centre",
+     "label": "Centre (chan)",
+     "min": 0,
+     "max": 8,
+     "default": 1,
+     "step": 1
+    },
+    {
+     "name": "depth",
+     "label": "Depth (chans)",
+     "min": 0,
+     "max": 4,
+     "default": 4,
+     "step": 1
+    },
+    {
+     "name": "veloc",
+     "label": "Read speed ×",
+     "min": 0,
+     "max": 2,
+     "default": 1,
+     "step": 0.05
+    },
+    {
+     "name": "dens",
+     "label": "Density",
+     "min": 0.25,
+     "max": 4,
+     "default": 2,
+     "step": 0.25
+    },
+    {
+     "name": "gsize",
+     "label": "Grain (ms)",
+     "min": 12,
+     "max": 200,
+     "default": 50,
+     "step": 1
+    },
+    {
+     "name": "pshift",
+     "label": "Pitch shift (st)",
+     "min": -12,
+     "max": 12,
+     "default": 0,
+     "step": 0.5
+    },
+    {
+     "name": "outlength",
+     "label": "Max length (s)",
+     "min": 1,
+     "max": 20,
+     "default": 4,
+     "step": 0.5
+    }
+   ]
+  }
+ ]
+}

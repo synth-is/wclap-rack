@@ -1,0 +1,6 @@
+{
+  "cdp-engine": {
+    "path": "cdp-engine.wclap.tar.gz",
+    "sha256": "a161ed087c066170a0d401673d35b57de1860d01de61ac6e075a10b4bdf63211"
+  }
+}
