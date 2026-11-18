@@ -1,6 +1,11 @@
 node_modules/
 tests/bundles/testfx/build/
+engines/*/build/
 *.wclap.tar.gz
 !tests/rack-bundle/*.wclap.tar.gz
+!engines/*/*.wclap.tar.gz
 *.wclap-rack.tar.gz
 tests/build/
+bundle-host/
+dist/
+build-*.log

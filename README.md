@@ -40,6 +40,12 @@ tools/                   validate.mjs (schema + sha256), render.mjs (offline con
 test-host/               browser test host: loads a rack bundle, plays a saw through the rack in realtime
                          (AudioWorklet, module worklet), per-device param sliders and bypass — the same
                          testing capability the open-webclap kit's test-host offers, for racks
+engines/                 engine (source) plugins for SPEC §8 file delivery: sfz-engine (a minimal SFZ
+                         sampler WCLAP receiving .sfz + samples), faust-runner (a generic Faust-graph
+                         runner receiving a genome wasm + JSON and executing it via embedded wasm3), and
+                         cppn-engine (a real-time CPPN+DSP engine receiving a Synth.is genome JSON —
+                         waveNetwork CPPN + asNEAT DSP patch — and evaluating both per sample) —
+                         all delivered via wclap.files/1; see engines/<name>/README.md
 tests/                   conformance harness (node --test tests/conformance.test.mjs) + the testfx
                          bundle (MIT) it runs on
 ```
@@ -72,6 +78,19 @@ http://127.0.0.1:8137/test-host/?bundle=/tests/rack-bundle/demo.wclap-rack.tar.g
 http://127.0.0.1:8137/test-host/?bundle=/examples/ports-rack/ports-rack.wclap-rack.tar.gz
 http://127.0.0.1:8137/test-host/?bundle=/examples/effects-rack/effects-rack.wclap-rack.tar.gz
 http://127.0.0.1:8137/test-host/?bundle=/examples/synth-fx-rack/synth-fx-rack.wclap-rack.tar.gz
+http://127.0.0.1:8137/test-host/?bundle=/examples/sfz-rack/sfz-rack.wclap-rack.tar.gz
+http://127.0.0.1:8137/test-host/?bundle=/examples/faust-rack/faust-rack.wclap-rack.tar.gz
+http://127.0.0.1:8137/test-host/?bundle=/examples/synth-is-sfz/synth-is-sfz.wclap-rack.tar.gz
+http://127.0.0.1:8137/test-host/?bundle=/examples/synth-is-faust/synth-is-faust.wclap-rack.tar.gz
+http://127.0.0.1:8137/test-host/?bundle=/examples/synth-is-cppn/synth-is-cppn.wclap-rack.tar.gz
+# …or point at ANY Synth.is CPPN+DSP sound id — the page fetches its raw genome from api.synth.is
+# (through the dev server's /proxy/synthis/ route; the API 500s browser preflights from unknown
+# origins) and assembles a live cppn-engine rack in memory. It auto-plays key 69 at velocity 1
+# (the same noteDelta 0 / 440 Hz the synth.is preview renders at) and shows performance pads:
+# pitch × duration (live Pitch/Duration params) and network weights (x,y) — the same geometric
+# weight mapping as the main web app (test-host/geometric-map.js), re-delivering the adjusted genome:
+http://127.0.0.1:8137/test-host/?sound=01KR0R5T4S7SQF4W8M1G99CGS9
+# (same via the "Synth.is CPPN+DSP sound" input box on the page)
 ```
 
 - `tests/rack-bundle/demo.wclap-rack.tar.gz` — the testfx demo (gain −6 dB → 64-sample delay).
@@ -84,6 +103,24 @@ http://127.0.0.1:8137/test-host/?bundle=/examples/synth-fx-rack/synth-fx-rack.wc
   Pearls process it. In the test host the source panel has note buttons; without a source the page plays
   the 110 Hz saw instead.
   Rebuild after changing the examples: `node tools/pack-rack.mjs examples/synth-fx-rack --out examples/synth-fx-rack/synth-fx-rack.wclap-rack.tar.gz`
+- `examples/sfz-rack/sfz-rack.wclap-rack.tar.gz` — **file delivery (SPEC §8)**: the `source` is
+  `engines/sfz-engine`, an SFZ sampler engine; the rack carries `source.files` (a `demo.sfz` + its
+  `c4.wav` sample) which the host delivers to the module via `wclap.files/1` before activate. A C-major
+  arpeggio renders through WetChorus. Rebuild: `node tools/pack-rack.mjs examples/sfz-rack --out examples/sfz-rack/sfz-rack.wclap-rack.tar.gz`
+- `examples/faust-rack/faust-rack.wclap-rack.tar.gz` — **generic Faust genome delivery (SPEC §8)**:
+  the `source` is `engines/faust-runner`, which receives a free-form Faust genome (`genome.wasm` +
+  `genome.json` via `source.files`), exposes its widgets as dynamic parameters, and executes the wasm
+  through an embedded interpreter. A C-major arpeggio renders through WetChorus. Rebuild:
+  `node tools/pack-rack.mjs examples/faust-rack --out examples/faust-rack/faust-rack.wclap-rack.tar.gz`
+- `examples/synth-is-sfz/` — **a real Synth.is CPPN+DSP sound** (01KR0R5T4S7SQF4W8M1G99CGS9, SFZ
+  rendition trimmed to keys C3/C4/C5 for size) played by `sfz-engine` via `source.files`.
+- `examples/synth-is-faust/` — **a real Synth.is Faust sound** (01M6ZRAYNZG2KXPCJBWFGRZ8KF,
+  `instrument.wasm` + `instrument.json` from the Synth.is takeout, unmodified) played by
+  `faust-runner`; its evolved parameters (cutMul, det, lfodepth, lforate, lvl, res) appear as sliders.
+- `examples/synth-is-cppn/` — **a real Synth.is CPPN+DSP sound played LIVE** (01KR0R5T4S7SQF4W8M1G99CGS9,
+  genome JSON delivered unmodified) by `engines/cppn-engine`, which evaluates the CPPN and its asNEAT
+  DSP patch per sample inside the plugin (no SFZ rendering step); Duration/Volume/Attack/Release/X/Y
+  appear as sliders. Rebuild: `node tools/pack-rack.mjs examples/synth-is-cppn --out examples/synth-is-cppn/synth-is-cppn.wclap-rack.tar.gz`
 - Or use the page's file picker: a `.wclap-rack.tar.gz`, or a rack bundle **directory**.
 - Click **Load & play** (the click also unlocks audio): with a `source` in the rack its note plays
   (and the source panel has clickable note buttons); without one, a 110 Hz saw plays through the rack
