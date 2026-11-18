@@ -10,12 +10,29 @@
     "./rack": "./reference-host/rack.mjs",
     "./bundle": "./reference-host/bundle.mjs"
   },
+  "files": [
+    "reference-host/",
+    "schema/",
+    "SPEC.md",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "test": "node --test tests/conformance.test.mjs",
     "validate": "node tools/validate.mjs",
     "render": "node tools/render.mjs",
     "pack": "node tools/pack-rack.mjs"
   },
-  "engines": { "node": ">=20" },
-  "keywords": ["wclap", "webclap", "clap", "rack", "audio", "wasm", "plugin"]
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "wclap",
+    "webclap",
+    "clap",
+    "rack",
+    "audio",
+    "wasm",
+    "plugin"
+  ]
 }

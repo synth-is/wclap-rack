@@ -171,5 +171,16 @@ profile with named slots lives there, not in this core format).
 
 ## Licence
 
-MIT (see LICENSE) for the spec, schemas, reference host, tools and test host. Test bundles carry their
-own licences (`tests/bundles/testfx/LICENSE`, NOTICE).
+MIT (see LICENSE) for the spec, schemas, reference host, tools and test host. The npm package
+(`package.json` `files`) contains only those parts.
+
+Everything under `engines/`, `examples/` and `tests/bundles/` carries its own LICENSE and NOTICE:
+
+- `engines/sfz-engine`, `engines/faust-runner`, `engines/cdp-fx`: MIT.
+- `engines/cppn-engine`: our source is MIT, but the built engine (`cppn-engine.wclap.tar.gz`) is
+  **GPL-3.0-only** (`COPYING`), because it links the Faust library reverb `vital_rev`, which is
+  GPL-3.0-only. Its NOTICE lists the licence of every Faust library it compiles in.
+- `engines/cdp-engine`: our code is MIT; the vendored CDP programs (`third_party/cdp-wasm`) are
+  LGPL-2.1-or-later, its JS engine MIT.
+- The example racks reference ported plugins (Surge XT, OB-Xf, …) whose bundles are not in this repo;
+  each port's licence travels inside its own bundle.

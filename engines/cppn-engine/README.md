@@ -2,7 +2,9 @@
 
 `is.synth.kromosynth.cppn-engine` — a CLAP instrument that runs a Synth.is **CPPN+DSP genome live,
 per sample, inside a WCLAP plugin**, the real-time counterpart of kromosynth's sample-based (SFZ)
-delivery of the same sounds. MIT (see LICENSE/NOTICE), built like `engines/sfz-engine`.
+delivery of the same sounds, built like `engines/sfz-engine`. **Licence:** our source is MIT (LICENSE); the
+built engine (`cppn-engine.wclap.tar.gz`) is GPL-3.0-only (COPYING) because it links the Faust
+`vital_rev` reverb. NOTICE has the details.
 
 In this substrate a genome is two networks: a `waveNetwork` (a CPPN whose outputs are signals —
 audio-rate waves and/or control-rate envelopes/LFOs, each rendered at its own frequency) and an

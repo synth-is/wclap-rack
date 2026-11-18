@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build the cppn-engine WCLAP module: engines/cppn-engine/build/module.wasm (plus LICENSE, NOTICE,
-# BUILD-INFO.txt) and the packed bundle engines/cppn-engine/cppn-engine.wclap.tar.gz.
+# COPYING, BUILD-INFO.txt) and the packed bundle engines/cppn-engine/cppn-engine.wclap.tar.gz.
 # Toolchain: Emscripten 3.1.51 from emsdk (the same as tests/bundles/testfx and engines/sfz-engine).
 # Override with EMSDK=/path/to/emsdk. Usage: engines/cppn-engine/scripts/build.sh [--clean]
 set -euo pipefail
@@ -44,6 +44,7 @@ emcc -std=c++17 -O3 -fno-exceptions -fno-rtti -DNDEBUG \
 
 cp "$HERE/LICENSE" "$OUT/LICENSE"
 cp "$HERE/NOTICE" "$OUT/NOTICE"
+cp "$HERE/COPYING" "$OUT/COPYING"   # the built engine is GPL-3.0-only (it links vital_rev): see NOTICE
 rm -rf "$OUT/ui" && cp -R "$HERE/ui" "$OUT/ui"   # served next to module.wasm by hosts that load the build dir
 {
     echo "built:      $(date -u +%Y-%m-%dT%H:%M:%SZ) (informational; the module bytes do not depend on it)"
@@ -59,7 +60,7 @@ rm -rf "$OUT/ui" && cp -R "$HERE/ui" "$OUT/ui"   # served next to module.wasm by
 STAGE="$HERE/../.bundle-stage"
 rm -rf "$STAGE"
 mkdir -p "$STAGE/cppn-engine.wclap"
-cp "$OUT/module.wasm" "$HERE/LICENSE" "$HERE/NOTICE" "$STAGE/cppn-engine.wclap/"
+cp "$OUT/module.wasm" "$HERE/LICENSE" "$HERE/NOTICE" "$HERE/COPYING" "$STAGE/cppn-engine.wclap/"
 cp -R "$HERE/ui" "$STAGE/cppn-engine.wclap/ui"   # the editor page (clap.webview get_uri = ui/index.html)
 (cd "$STAGE" && tar czf "$ARCHIVE" cppn-engine.wclap)
 rm -rf "$STAGE"

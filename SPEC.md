@@ -211,11 +211,14 @@ delivers them:
 Rationale: this is what makes the rack bundle the **single extraction/distribution vessel** — a CPPN+DSP
 genome rendered to SFZ, a free-form Faust genome, and a ported synth (Aether, …) all ship as
 `source` = engine plugin (or the ported plugin itself) + `devices` = effects, and load through one path
-in every host. The engine plugins' own licences ride in their WCLAP bundles as usual (sfizz is
-BSD-2-Clause; Faust-generated DSP code is the instrument author's own), so engine plugins do not tighten
-the licence posture of a public palette.
+in every host. The engine plugins' own licences ride in their WCLAP bundles as usual (LICENSE, NOTICE and
+any COPYING next to `module.wasm`). An engine's licence is whatever it links: Faust-generated DSP code is
+the instrument author's own under the Faust library exception, but a few Faust library functions are
+GPL-3.0-only (e.g. `reverbs.lib/vital_rev`), and an engine that links one is GPL-3.0 as a whole.
 
-Reference engines ship in this repo under `engines/` (all MIT): `engines/sfz-engine/`, a small SFZ
+Reference engines ship in this repo under `engines/`, each with its own LICENSE and NOTICE (our code is
+MIT; `engines/cppn-engine/`'s built bundle is GPL-3.0-only because it links `vital_rev`;
+`engines/cdp-engine/` carries the CDP programs, LGPL-2.1-or-later): `engines/sfz-engine/`, a small SFZ
 sampler WCLAP that receives its `.sfz` + samples through `wclap.files/1` exactly as specified above
 (`examples/sfz-rack/`, `tests/sfz-engine.test.mjs`), `engines/faust-runner/`, a generic Faust-graph
 runner that receives a genome's wasm + JSON and executes it through an embedded wasm interpreter,
