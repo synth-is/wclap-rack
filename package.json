@@ -18,7 +18,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "node --test tests/conformance.test.mjs",
+    "test": "node --test tests/conformance.test.mjs tests/linked-rack.test.mjs",
     "validate": "node tools/validate.mjs",
     "render": "node tools/render.mjs",
     "pack": "node tools/pack-rack.mjs"

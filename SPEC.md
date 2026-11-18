@@ -56,6 +56,46 @@ my-rack.wclap-rack/
 `MANIFEST.json` pins every referenced bundle by content hash (`schema/manifest.schema.json`). A host
 MUST verify the sha256 of each `module.wasm` against the manifest and MUST refuse a mismatch.
 
+Bundle and rack archives are POSIX tar (ustar), optionally gzipped. A path longer than 100 bytes keeps
+its leading directories in the ustar `prefix` field; readers MUST join them as `prefix + "/" + name`.
+
+### 1.1 Linked racks
+
+A **linked rack** travels as one small JSON document instead of an archive. Its bundles are fetched
+by URL and pinned by hash (`schema/rack-link.schema.json`):
+
+```json
+{
+  "format": "wclap-rack-link",
+  "version": 1,
+  "rack": { "format": "wclap-rack", "version": 1, "source": { … }, "devices": [ … ] },
+  "manifest": {
+    "<bundle key>": { "url": "<a .wclap.tar.gz archive>", "sha256": "<sha256 of its module.wasm>" }
+  }
+}
+```
+
+- `rack` is an ordinary rack document (§2). Its `bundle` keys name entries of `manifest`.
+- `url` is absolute, or relative to the linked document's own URL. It names a bundle archive in the
+  same form a rack archive embeds (`<key>.wclap.tar.gz`).
+- `sha256` is REQUIRED for every bundle the rack uses (a rack archive's MANIFEST must carry one too, but
+  a linked rack has no other integrity check). Hosts MUST verify each downloaded `module.wasm` against
+  it and MUST refuse a mismatch.
+- Hosts SHOULD cache bundles by `sha256`, so racks that share a bundle download it once. Serving a
+  bundle at a content-addressed URL (one that changes whenever its bytes do) lets HTTP caches keep it
+  for good.
+- A linked rack's `source` carries no `files` (§8) in version 1: files have no URL form yet, so a rack
+  whose instrument needs files travels as an archive. Hosts MUST refuse a linked rack whose source
+  lists files.
+- Other top-level members (a credit line, the rack's page) are allowed; hosts ignore them.
+
+The reference host loads one with `loadRackLink(doc, { baseUrl, fetch, cache })`
+(`reference-host/link.mjs`), which returns the `{ rack, manifest, bundles }` that `renderRack` takes;
+`tests/linked-rack.test.mjs` is the conformance test. Synth.is serves linked racks at
+`https://api.synth.is/api/racks/<soundId>.json`, with bundles at content-addressed URLs
+(`https://synth.is/burst/wclap/<engine>/<version>-<sha12>.wclap.tar.gz`), and
+`@kromosynth/strudel-rack` loads them in Strudel.
+
 ## 2. The rack document (`rack.json`)
 
 ```json

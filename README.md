@@ -33,8 +33,9 @@ each device's `clap.latency` at that device; realtime hosts report the summed la
 
 ```
 SPEC.md                  the standard (document model, render semantics, conformance levels L1-L4)
-schema/                  JSON Schemas for rack.json and MANIFEST.json
-reference-host/          environment-agnostic JS host core + rack renderer (Node / browser page / AudioWorklet)
+schema/                  JSON Schemas for rack.json, MANIFEST.json and linked racks (rack-link)
+reference-host/          environment-agnostic JS host core + rack renderer (Node / browser page / AudioWorklet);
+                         link.mjs loads linked racks (SPEC §1.1)
 tools/                   validate.mjs (schema + sha256), render.mjs (offline conformance renderer),
                          pack-rack.mjs (pack a rack bundle dir into .wclap-rack.tar.gz)
 test-host/               browser test host: loads a rack bundle, plays a saw through the rack in realtime
@@ -46,8 +47,8 @@ engines/                 engine (source) plugins for SPEC §8 file delivery: sfz
                          cppn-engine (a real-time CPPN+DSP engine receiving a Synth.is genome JSON —
                          waveNetwork CPPN + asNEAT DSP patch — and evaluating both per sample) —
                          all delivered via wclap.files/1; see engines/<name>/README.md
-tests/                   conformance harness (node --test tests/conformance.test.mjs) + the testfx
-                         bundle (MIT) it runs on
+tests/                   conformance harness (npm test: conformance.test.mjs + linked-rack.test.mjs) +
+                         the testfx bundle (MIT) it runs on
 ```
 
 ## Quick start
@@ -56,13 +57,28 @@ tests/                   conformance harness (node --test tests/conformance.test
 # 1. build the test bundle (needs Emscripten 3.1.51; EMSDK=... overrides)
 EMSDK=~/emsdk bash tests/bundles/testfx/scripts/build.sh
 
-# 2. run the conformance harness
-node --test tests/conformance.test.mjs
+# 2. run the conformance harness (archive racks and linked racks)
+npm test
 
 # 3. validate / render / pack a rack bundle
 node tools/validate.mjs --bundle tests/rack-bundle
 node tools/render.mjs  --bundle tests/rack-bundle --seconds 1 --out out.wav
 node tools/pack-rack.mjs tests/rack-bundle --out demo.wclap-rack.tar.gz
+```
+
+## Linked racks
+
+A rack can also travel as one small JSON document whose bundles are fetched by URL and pinned by
+sha256 (SPEC §1.1). Synth.is serves its racks this way.
+
+```js
+import { loadRackLink, renderRack } from 'wclap-rack';
+
+const url = 'https://api.synth.is/api/racks/<soundId>.json';
+const doc = await (await fetch(url)).json();
+const cache = new Map(); // share it across racks: a bundle used by several racks downloads once
+const { rack, bundles } = await loadRackLink(doc, { baseUrl: url, cache });
+const out = await renderRack({ rack, bundles, input: { left, right } }); // or rack.source + notes
 ```
 
 ## Testing — what to load where

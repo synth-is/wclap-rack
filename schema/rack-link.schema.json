@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://webclap.org/schema/rack-link.schema.json",
+  "title": "WCLAP linked rack",
+  "description": "A linked rack (SPEC.md §1.1): a wclap-rack v1 document plus a manifest of bundle archives fetched by URL and pinned by the sha256 of their module.wasm. Every bundle the rack uses must have an entry; a linked rack's source carries no files in version 1. Other top-level members (a credit, the rack's page) are allowed and ignored by hosts.",
+  "type": "object",
+  "required": ["format", "version", "rack", "manifest"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "format": { "const": "wclap-rack-link" },
+    "version": { "const": 1 },
+    "rack": { "$ref": "rack.schema.json" },
+    "manifest": {
+      "type": "object",
+      "patternProperties": {
+        "^[^/]+$": {
+          "type": "object",
+          "required": ["url", "sha256"],
+          "properties": {
+            "url": { "type": "string", "minLength": 1, "description": "URL of the bundle archive (.wclap.tar.gz), absolute or relative to the linked document's own URL" },
+            "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "sha256 hex of the module.wasm inside the archive" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": true
+}

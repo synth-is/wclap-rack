@@ -6,3 +6,4 @@ export { untar, untarArchiveAsync, loadBundleBytes, loadBundleBytesAsync } from 
 export {
   RACK_FORMAT, RACK_VERSION, sha256Hex, validateRackDoc, validateRackBundle, renderRack, describeBundle,
 } from './rack.mjs';
+export { RACK_LINK_FORMAT, RACK_LINK_VERSION, rackBundleKeys, validateRackLink, loadRackLink } from './link.mjs';

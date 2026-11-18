@@ -13,8 +13,14 @@ export function untar(buffer) {
 	const files = {};
 	for (let offset = 0; offset + 512 <= buffer.length;) {
 		const header = buffer.subarray(offset, offset + 512);
-		const name = utf8.decode(header.subarray(0, 100)).replace(/\0.*$/s, '');
+		let name = utf8.decode(header.subarray(0, 100)).replace(/\0.*$/s, '');
 		if (!name) break;
+		// ustar: a path longer than 100 bytes keeps its leading directories in the prefix field
+		// (bytes 345-500), joined as prefix + "/" + name (SPEC §1; synth.is bundle archives do this)
+		if (utf8.decode(header.subarray(257, 262)) === 'ustar') {
+			const prefix = utf8.decode(header.subarray(345, 500)).replace(/\0.*$/s, '');
+			if (prefix) name = `${prefix}/${name}`;
+		}
 		const size = parseInt(utf8.decode(header.subarray(124, 136)).replace(/\0.*$/s, '').trim() || '0', 8);
 		const type = String.fromCharCode(header[156]);
 		if (type === '0' || type === '\0') files[name.replace(/^\.\//, '')] = new Uint8Array(buffer.subarray(offset + 512, offset + 512 + size));
